@@ -1,10 +1,10 @@
 """Chat orchestration that preserves the existing NDJSON event contract."""
 import re
 import uuid
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import datetime
 
-from app.services.citation_service import source_metadata
+from app.services.citation_service import knowledge_identifier, source_metadata
 
 
 @dataclass
@@ -20,13 +20,17 @@ class ChatSession:
     upstream: object
     repository: object
     diagnostics: object
+    retrieval_diagnostics: dict
 
     def events(self):
         """Yield source and content events, persisting only non-empty completed output."""
-        yield {
+        source_event = {
             'chat_id': self.chat_id,
             **source_metadata(self.facts, self.documents),
         }
+        if self.retrieval_diagnostics is not None:
+            source_event['retrieval_diagnostics'] = self.retrieval_diagnostics
+        yield source_event
         full = []
         completed = False
         for chunk in self.upstream:
@@ -62,11 +66,11 @@ class ChatService:
     """Coordinate retrieval, prompt construction, local streaming, and persistence."""
 
     def __init__(self, repository_factory, ollama_client_factory, search_knowledge,
-                 search_documents, prompt_builder, allowed_context_windows):
+                 retrieve_documents, prompt_builder, allowed_context_windows):
         self.repository_factory = repository_factory
         self.ollama_client_factory = ollama_client_factory
         self.search_knowledge = search_knowledge
-        self.search_documents = search_documents
+        self.retrieve_documents = retrieve_documents
         self.prompt_builder = prompt_builder
         self.allowed_context_windows = tuple(allowed_context_windows)
 
@@ -84,7 +88,16 @@ class ChatService:
             raise ValueError('پارامترهای مدل یا پرسش نامعتبرند')
 
         facts = self.search_knowledge(question)
-        documents = self.search_documents(question, limit=5)
+        document_result = self.retrieve_documents(question, limit=5)
+        if hasattr(document_result, 'records') and hasattr(document_result, 'diagnostics'):
+            documents = document_result.records
+            retrieval_diagnostics = asdict(document_result.diagnostics)
+            retrieval_diagnostics['selected_citation_identifiers'] = (
+                [knowledge_identifier(fact) for fact in facts] +
+                list(retrieval_diagnostics['selected_source_identifiers']))
+        else:
+            documents = document_result
+            retrieval_diagnostics = None
         repository = self.repository_factory()
         is_new_chat = chat_id is None
         if is_new_chat:
@@ -108,4 +121,5 @@ class ChatService:
             upstream=upstream,
             repository=repository,
             diagnostics=prompt.diagnostics,
+            retrieval_diagnostics=retrieval_diagnostics,
         )

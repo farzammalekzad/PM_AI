@@ -61,6 +61,9 @@ class RetrievalServiceTests(unittest.TestCase):
         self.assertEqual([row['document_id'] for row in result.records], [1])
         self.assertTrue(result.diagnostics.lexical_fallback)
         self.assertEqual(result.diagnostics.errors, ('ValueError',))
+        self.assertEqual(result.diagnostics.mode, 'lexical')
+        self.assertEqual(result.diagnostics.fallback_reason, 'embedding_error')
+        self.assertGreaterEqual(result.diagnostics.duration_ms, 0)
 
         calls = []
         mismatched = RetrievalService(
@@ -70,6 +73,8 @@ class RetrievalServiceTests(unittest.TestCase):
         self.assertEqual([row['document_id'] for row in result.records], [1])
         self.assertFalse(result.diagnostics.semantic_attempted)
         self.assertFalse(result.diagnostics.lexical_fallback)
+        self.assertEqual(result.diagnostics.mode, 'lexical')
+        self.assertEqual(result.diagnostics.fallback_reason, 'no_compatible_vectors')
         self.assertEqual(calls, [])
 
     def test_low_semantic_match_without_lexical_hit_is_excluded(self):

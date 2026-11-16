@@ -124,6 +124,25 @@ class OfflineAssistantRegressionTests(unittest.TestCase):
         self.assertEqual(handler.code, 200)
         self.assertEqual(handler.result, expected)
 
+    def test_rag_monitoring_endpoint_and_rtl_dashboard_contract(self):
+        class FakeHandler:
+            path = '/api/rag-monitoring'
+
+            def json_response(self, result, code=200):
+                self.result = result
+                self.code = code
+
+        handler = FakeHandler()
+        expected = {'health': {'ollama': {'connected': True}}, 'index': {'total_documents': 2}}
+        with mock.patch.object(app, 'rag_monitoring_status', return_value=expected):
+            app.Handler.do_GET(handler)
+        self.assertEqual(handler.code, 200)
+        self.assertEqual(handler.result, expected)
+        self.assertIn('<html lang="fa" dir="rtl">', app.PAGE)
+        self.assertIn('openMonitoring', app.PAGE)
+        self.assertIn('/api/rag-monitoring', app.PAGE)
+        self.assertIn('textContent', app.PAGE)
+
     def test_models_endpoint_preserves_response_contract(self):
         class FakeHandler:
             path = '/api/models'

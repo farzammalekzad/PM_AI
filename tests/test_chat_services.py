@@ -3,6 +3,7 @@ import unittest
 
 from app.services.chat_service import ChatService
 from app.services.prompt_builder import PromptBuilder, TRUNCATION_MARKER
+from app.services.retrieval_service import DocumentRetrievalResult, RetrievalDiagnostics
 
 
 class FakeRepository:
@@ -136,6 +137,33 @@ class ChatServiceTests(unittest.TestCase):
         self.assertEqual(prompted_roles, ['system', 'user', 'assistant', 'user'])
         self.assertEqual(repository.exchanges[0][0], chat_id)
         self.assertEqual(repository.exchanges[0][2], 'New answer')
+
+    def test_retrieval_diagnostics_are_isolated_per_chat_session(self):
+        repository = FakeRepository()
+        client = FakeClient([{'message': {'content': 'answer'}, 'done': True}])
+
+        def retrieve(question, limit):
+            document_id = 10 if question == 'first' else 20
+            diagnostics = RetrievalDiagnostics(
+                'synthetic', True, True, False, 1, 1,
+                (f'D{document_id}-C1',), 'hybrid', None, 1, ())
+            return DocumentRetrievalResult(
+                [{'document_id': document_id, 'chunk_no': 1,
+                  'name': 'synthetic.txt', 'content': 'content'}], diagnostics)
+
+        service = ChatService(
+            lambda: repository, lambda: client, lambda question: [], retrieve,
+            PromptBuilder(), (4096, 8192))
+        first = service.start({'chat_id': None, 'question': 'first', 'content': 'first',
+                               'model': 'gemma-synthetic', 'ctx': 4096})
+        second = service.start({'chat_id': None, 'question': 'second', 'content': 'second',
+                                'model': 'gemma-synthetic', 'ctx': 4096})
+        first_source = next(first.events())
+        second_source = next(second.events())
+        self.assertEqual(first_source['retrieval_diagnostics']['selected_citation_identifiers'],
+                         ['D10-C1'])
+        self.assertEqual(second_source['retrieval_diagnostics']['selected_citation_identifiers'],
+                         ['D20-C1'])
 
 
 if __name__ == '__main__':

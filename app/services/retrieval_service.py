@@ -1,6 +1,7 @@
 """Compatibility-preserving lexical and optional semantic retrieval services."""
 import json
 import re
+import time
 from dataclasses import dataclass
 
 from app.services.citation_service import document_identifier
@@ -44,6 +45,8 @@ class RetrievalDiagnostics:
     selected_chunks: int
     selected_source_identifiers: tuple
     mode: str
+    fallback_reason: str
+    duration_ms: int
     errors: tuple
 
 
@@ -79,6 +82,7 @@ class RetrievalService:
         return [dict(row) for _, row in scored[:limit]]
 
     def retrieve_documents(self, query, limit=5):
+        started = time.monotonic()
         records = self.repository_factory().document_records()
         words = tokenize_persian(query)
         model = self.embedding_model
@@ -121,6 +125,14 @@ class RetrievalService:
         ranked.sort(key=lambda value: -value[0])
         selected = [record for _, record in ranked[:limit]]
         mode = 'hybrid' if query_vector is not None else 'lexical'
+        if not model:
+            fallback_reason = 'embedding_not_configured'
+        elif semantic_attempted and query_vector is None:
+            fallback_reason = 'embedding_error'
+        elif not semantic_attempted:
+            fallback_reason = 'no_compatible_vectors'
+        else:
+            fallback_reason = None
         diagnostics = RetrievalDiagnostics(
             embedding_model=model,
             semantic_attempted=semantic_attempted,
@@ -131,6 +143,8 @@ class RetrievalService:
             selected_source_identifiers=tuple(
                 document_identifier(record) for record in selected),
             mode=mode,
+            fallback_reason=fallback_reason,
+            duration_ms=int((time.monotonic() - started) * 1000),
             errors=tuple(dict.fromkeys(errors)),
         )
         return DocumentRetrievalResult(selected, diagnostics)

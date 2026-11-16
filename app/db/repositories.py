@@ -54,6 +54,13 @@ class Repositories:
             return database.execute('''SELECT c.document_id,c.chunk_no,c.content,c.vector,d.name,d.embed_model
                 FROM doc_chunks c JOIN documents d ON d.id=c.document_id''').fetchall()
 
+    def index_records(self):
+        """Return only index metadata needed for read-only monitoring statistics."""
+        with self.connect() as database:
+            return database.execute('''SELECT d.id AS document_id,d.embed_model,
+                c.id AS chunk_id,c.vector
+                FROM documents d LEFT JOIN doc_chunks c ON c.document_id=d.id''').fetchall()
+
     def list_documents(self):
         with self.connect() as database:
             return database.execute(
