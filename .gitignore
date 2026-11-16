@@ -1,0 +1,10 @@
+# Local organizational data; never commit it.
+ollama_company_data/
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+
+# Python local artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
