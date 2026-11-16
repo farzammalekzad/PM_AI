@@ -41,6 +41,17 @@ python -m py_compile ollama_persian_rag.py
 
 Tests use synthetic files and temporary SQLite databases only. They do not contact Ollama or access the live database.
 
+## Synthetic Persian retrieval evaluation
+
+The offline evaluation corpus contains 31 synthetic Persian questions and 14 synthetic document chunks spanning project management, procedures, minutes, contracts, delays, reporting, spelling variants, paraphrases, and unanswerable questions. It never reads the company database or calls an external service.
+
+```powershell
+python scripts/evaluate_persian_retrieval.py --json reports/persian_retrieval_evaluation.json --markdown reports/persian_retrieval_evaluation.md
+python scripts/evaluate_persian_retrieval.py --without-embeddings --json reports/persian_retrieval_unavailable.json --markdown reports/persian_retrieval_unavailable.md
+```
+
+The first command uses a deterministic mocked local embedder to compare lexical, semantic-only, and existing hybrid retrieval. The second records semantic and hybrid as explicitly unavailable; it never substitutes lexical results. `Recall@3` and `Recall@5` are macro relevant-chunk recall over answerable questions, `MRR@5` is the mean reciprocal rank of the first relevant chunk, and `Precision@5` is macro precision with a fixed denominator of five across all questions, including unanswerable ones. Reports include per-question identifiers, latency, and non-sensitive failure categories. A generated baseline is tracked in [reports/persian_retrieval_evaluation.md](reports/persian_retrieval_evaluation.md) and [reports/persian_retrieval_evaluation.json](reports/persian_retrieval_evaluation.json).
+
 ## Architecture direction
 
 The entry point remains `ollama_persian_rag.py` for compatibility. SQLite responsibilities are isolated in `app/db/`; `app/config.py` centralizes the established environment configuration; `app/services/ollama_client.py` owns local Ollama HTTP requests; chat services coordinate bounded prompts and streaming; document services preserve local formats and atomic persistence; retrieval/citation services preserve Persian ranking and evidence identifiers; and `rag_monitoring.py` calculates read-only coverage statistics. The next incremental boundaries are documented in [ROADMAP.md](ROADMAP.md): HTTP handlers, static UI assets, and focused tests. Preserve API and database compatibility while extracting one boundary at a time.

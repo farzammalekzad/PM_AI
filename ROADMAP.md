@@ -55,7 +55,7 @@ Create compatibility wrappers around existing functions first, then move one end
 
 1. **Stabilize:** completed baseline migration, health diagnostics, safe backup helper, integrity checks, structured local logging, and regression coverage.
 2. **Modularize:** database, configuration, Ollama-client, prompt-builder, chat-service, document-extractor, document-ingestion, retrieval, and citation boundaries are extracted. Next extract HTTP handlers and static UI assets without changing streaming or schema contracts.
-3. **RAG diagnostics:** completed read-only embedding health, index coverage, model/dimension mismatch, and request-scoped fallback diagnostics with a Persian RTL dashboard. Next, record vector version through an approved additive migration, provide explicit opt-in re-indexing, create a Persian quality set, and preserve citation spans.
+3. **RAG diagnostics:** completed read-only embedding health, index coverage, model/dimension mismatch, request-scoped fallback diagnostics with a Persian RTL dashboard, and a reproducible synthetic Persian retrieval evaluation. Next, record vector version through an approved additive migration, provide explicit opt-in re-indexing, create a reviewed Persian quality set, and preserve citation spans.
 4. **Document lifecycle:** add ingestion jobs, failure state, preview, archive/restore, and testable extractor interfaces.
 5. **Read-only SQL Server:** only after explicit approval; use external credentials, network allowlists, query templates, timeouts, row limits, and auditing. Never execute free-form SQL from a prompt.
 6. **UI and operations:** improve Persian RTL accessibility, establish access control appropriate to the threat model, and add offline Windows packaging, backup, and retention operations.
@@ -69,3 +69,4 @@ Create compatibility wrappers around existing functions first, then move one end
 - Scanned PDFs, advanced spreadsheets, and rich Word content are not fully extracted.
 - Citations identify retrieved evidence but do not prove that a model response is grounded in it; a Persian groundedness evaluation set is still needed.
 - Index monitoring reads the current records but does not validate vector normalization or repair invalid/mismatched vectors; remediation must remain explicit and opt-in.
+- The synthetic evaluation validates measurement infrastructure, not organizational retrieval quality. A future approved quality set must be de-identified, reviewed, and kept separate from production data.
