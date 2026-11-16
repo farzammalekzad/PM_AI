@@ -4,8 +4,6 @@ Python 3.10+, standard library only. Optional pypdf for text PDFs.
 Run: python ollama_persian_memory.py
 """
 import base64
-import io
-import hashlib
 import json
 import logging
 import re
@@ -28,6 +26,9 @@ from app.db.migrations import initialize_database
 from app.db.repositories import Repositories
 from app.services.diagnostics import embedding_diagnostics
 from app.services.chat_service import ChatService
+from app.services.document_extractor import DocumentExtractor
+from app.services.document_ingestion import DocumentIngestionService
+from app.services.document_ingestion import chunk_document as service_chunk_document
 from app.services.ollama_client import OllamaClient
 from app.services.prompt_builder import PromptBuilder
 
@@ -168,19 +169,8 @@ def tokenize(text):
     return set(t for t in re.findall(r'[\w\u0600-\u06ff]{3,}',norm(text)) if t not in PERSIAN_STOP)
 
 def chunk_document(text, chunk_chars=1300, overlap=180):
-    """Approximate character-based chunks with overlap, retaining paragraph flow."""
-    text = text.strip()
-    if not text:return []
-    chunks=[];pos=0
-    while pos < len(text):
-        end=min(pos+chunk_chars,len(text))
-        if end<len(text):
-            pivot=max(text.rfind('\n',pos+chunk_chars//2,end),text.rfind(' ',pos+chunk_chars//2,end))
-            if pivot>pos+chunk_chars//2:end=pivot+1
-        chunks.append(text[pos:end].strip())
-        if end>=len(text):break
-        pos=max(pos+1,end-overlap)
-    return [x for x in chunks if x]
+    """Compatibility wrapper for the established retrieval chunk boundaries."""
+    return service_chunk_document(text, chunk_chars, overlap)
 
 def ollama_embedding(text, model):
     return ollama_client().embed(text, model)
@@ -191,30 +181,19 @@ def chat_service():
     return ChatService(repositories, ollama_client, search_knowledge, search_documents,
                        PromptBuilder(), ALLOWED_CONTEXT_WINDOWS)
 
+
+def document_extractor():
+    """Create the compatibility extractor with the configured archive limits."""
+    return DocumentExtractor(MAX_ARCHIVE_MEMBERS, MAX_ARCHIVE_UNCOMPRESSED)
+
+
+def document_ingestion_service():
+    """Create the compatibility ingestion service without changing embedding selection."""
+    return DocumentIngestionService(repositories, document_extractor(), ollama_embedding,
+                                    MAX_DOC_SIZE, MAX_DOC_CHARS)
+
 def ingest_document(name, raw, model):
-    if not name or len(name)>260:raise ValueError('نام فایل نامعتبر است')
-    if len(raw)>MAX_DOC_SIZE:raise ValueError('حجم سند بیشتر از ۸ مگابایت است')
-    name=Path(name.replace('\\','/')).name
-    if not name or name in ('.', '..'):
-        raise ValueError('نام فایل نامعتبر است')
-    text=document_text(name,raw)
-    if not text.strip():raise ValueError('متنی در سند یافت نشد؛ PDF اسکن‌شده به OCR نیاز دارد')
-    if len(text)>MAX_DOC_CHARS:raise ValueError('متن سند بیش از حد بزرگ است؛ آن را به چند فایل تقسیم کنید')
-    digest=hashlib.sha256(raw).hexdigest()
-    row = repositories().find_document_by_digest(digest)
-    if row:raise ValueError('این فایل قبلاً وارد پایگاه دانش شده است (شناسه '+str(row['id'])+')')
-    chunks=chunk_document(text)
-    if len(chunks)>1000:raise ValueError('تعداد بخش‌های سند بیش از حد زیاد است')
-    vectors=[]
-    if model:
-        for part in chunks:vectors.append(ollama_embedding(part,model))
-    else:vectors=[None for _ in chunks]
-    stored_chunks = [(index + 1, part, json.dumps(vector) if vector else '')
-                     for index, (part, vector) in enumerate(zip(chunks, vectors))]
-    ident = repositories().create_document_with_chunks(
-        name, digest, len(text), stored_chunks, model,
-        datetime.now().isoformat(timespec='seconds'))
-    return {'id':ident,'name':name,'chunks':len(chunks),'mode':'semantic' if model else 'lexical'}
+    return document_ingestion_service().ingest(name, raw, model)
 
 def search_documents(query,limit=5):
     """Hybrid cosine/term scoring; semantic only for vectors indexed with selected model."""
@@ -249,62 +228,12 @@ def search_documents(query,limit=5):
 
 
 def document_text(name, content):
-    ext = Path(name).suffix.lower()
-    if ext in ('.txt', '.md', '.csv', '.json', '.log'):
-        for enc in ('utf-8-sig', 'utf-16', 'cp1256'):
-            try:
-                return content.decode(enc)
-            except UnicodeError:
-                pass
-        return content.decode('utf-8', errors='replace')
-    if ext == '.docx':
-        with zipfile.ZipFile(io.BytesIO(content)) as z:
-            validate_office_archive(z)
-            if 'word/document.xml' not in z.namelist() or z.getinfo('word/document.xml').file_size > 20_000_000:
-                raise ValueError('سند Word بیش از حد بزرگ است')
-            root = ET.fromstring(z.read('word/document.xml'))
-        ns='{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
-        return '\n'.join(''.join(t.text or '' for t in p.iter(ns+'t')) for p in root.iter(ns+'p'))
-    if ext == '.xlsx':
-        ns='{http://schemas.openxmlformats.org/spreadsheetml/2006/main}'
-        with zipfile.ZipFile(io.BytesIO(content)) as z:
-            validate_office_archive(z)
-            shared=[]
-            if 'xl/sharedStrings.xml' in z.namelist():
-                if z.getinfo('xl/sharedStrings.xml').file_size > 20_000_000:
-                    raise ValueError('فایل Excel بیش از حد بزرگ است')
-                s=ET.fromstring(z.read('xl/sharedStrings.xml'))
-                shared=[''.join(t.text or '' for t in si.iter(ns+'t')) for si in s.iter(ns+'si')]
-            lines=[]
-            for name in sorted(n for n in z.namelist() if re.fullmatch(r'xl/worksheets/sheet\d+\.xml',n)):
-                if z.getinfo(name).file_size > 20_000_000:
-                    raise ValueError('برگه Excel بیش از حد بزرگ است')
-                root=ET.fromstring(z.read(name));lines.append('['+name+']')
-                for row in root.iter(ns+'row'):
-                    cells=[]
-                    for c in row.iter(ns+'c'):
-                        v=c.find(ns+'v'); val=v.text if v is not None and v.text else ''
-                        if c.get('t')=='s' and val.isdigit() and int(val)<len(shared):
-                            val=shared[int(val)]
-                        if c.get('t')=='inlineStr':
-                            val=''.join(t.text or '' for t in c.iter(ns+'t'))
-                        if val:cells.append(c.get('r','')+'='+val)
-                    if cells:lines.append(' | '.join(cells))
-            return '\n'.join(lines)
-    if ext == '.pdf':
-        try:
-            from pypdf import PdfReader
-        except ImportError as e:
-            raise ValueError('برای PDF متنی کتابخانه pypdf را آفلاین نصب کنید') from e
-        return '\n'.join(page.extract_text() or '' for page in PdfReader(io.BytesIO(content)).pages)
-    raise ValueError('فرمت فایل پشتیبانی نمی‌شود')
+    return document_extractor().extract(name, content)
 
 
 def validate_office_archive(archive):
-    """Reject oversized OOXML ZIPs before reading XML into memory."""
-    infos = archive.infolist()
-    if len(infos) > MAX_ARCHIVE_MEMBERS or sum(info.file_size for info in infos) > MAX_ARCHIVE_UNCOMPRESSED:
-        raise ValueError('محتوای فشرده سند بیش از حد بزرگ است')
+    """Compatibility wrapper for archive safety checks."""
+    return document_extractor().validate_archive(archive)
 
 
 PAGE = r'''<!doctype html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>دستیار سازمانی آفلاین</title>
