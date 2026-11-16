@@ -39,7 +39,7 @@ Tests use synthetic files and temporary SQLite databases only. They do not conta
 
 ## Architecture direction
 
-The entry point remains `ollama_persian_rag.py` for compatibility. SQLite responsibilities are isolated in `app/db/`; `app/config.py` centralizes the established environment configuration; `app/services/ollama_client.py` owns local Ollama HTTP requests; chat services coordinate bounded prompts and streaming; and document extraction/ingestion services preserve local formats, chunking, hashes, and atomic persistence. The next incremental boundaries are documented in [ROADMAP.md](ROADMAP.md): retrieval services, HTTP handlers, static UI assets, and focused tests. Preserve API and database compatibility while extracting one boundary at a time.
+The entry point remains `ollama_persian_rag.py` for compatibility. SQLite responsibilities are isolated in `app/db/`; `app/config.py` centralizes the established environment configuration; `app/services/ollama_client.py` owns local Ollama HTTP requests; chat services coordinate bounded prompts and streaming; document services preserve local formats and atomic persistence; and retrieval/citation services preserve Persian ranking and evidence identifiers while providing internal diagnostics. The next incremental boundaries are documented in [ROADMAP.md](ROADMAP.md): HTTP handlers, static UI assets, and focused tests. Preserve API and database compatibility while extracting one boundary at a time.
 
 ## Prompt budgeting
 
