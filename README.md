@@ -24,7 +24,7 @@ The live database is `ollama_company_data/company_memory.sqlite3`. Never delete,
 
 At startup, the application applies only additive migrations and records schema version `1` with `PRAGMA user_version`. Existing tables and records are retained. `backup_database()` creates a consistent SQLite backup through SQLite's backup API; by default it writes a new timestamped database under `ollama_company_data/backups/`. It never overwrites an existing backup.
 
-`GET /api/health` is a local diagnostic endpoint. It reports local Ollama connectivity, embedding-model availability, SQLite connectivity, schema version, document/chunk counts, integrity-check result, and foreign-key violation count. Operational logs are local and structured in `ollama_company_data/assistant.log`; they intentionally exclude request bodies, document content, prompts, embeddings, and credentials.
+`GET /api/health` is a local diagnostic endpoint. It reports local Ollama connectivity, embedding-model availability, SQLite connectivity, schema version, document/chunk counts, integrity-check result, and foreign-key violation count. The embedding object also reports model presence, vector dimension when available, a non-sensitive error category, and whether lexical fallback is active. Operational logs are local and structured in `ollama_company_data/assistant.log`; they intentionally exclude request bodies, document content, prompts, embeddings, and credentials.
 
 Supported document formats are TXT, MD, CSV, JSON, LOG, DOCX, XLSX, and text-based PDF. DOCX/XLSX archive member counts and uncompressed sizes are limited. Scanned PDFs need a separately approved local OCR solution.
 
@@ -39,4 +39,4 @@ Tests use synthetic files and temporary SQLite databases only. They do not conta
 
 ## Architecture direction
 
-The entry point remains `ollama_persian_rag.py` for compatibility. SQLite responsibilities are now isolated in `app/db/`: connection configuration, additive migrations, backup/integrity diagnostics, and parameterized repositories. The next incremental boundaries are documented in [ROADMAP.md](ROADMAP.md): configuration, chat/RAG/ingestion services, HTTP handlers, static UI assets, and focused tests. Preserve API and database compatibility while extracting one boundary at a time.
+The entry point remains `ollama_persian_rag.py` for compatibility. SQLite responsibilities are isolated in `app/db/`; `app/config.py` centralizes the established environment configuration; and `app/services/ollama_client.py` owns local Ollama HTTP requests and streaming validation. The next incremental boundaries are documented in [ROADMAP.md](ROADMAP.md): chat/RAG/ingestion services, HTTP handlers, static UI assets, and focused tests. Preserve API and database compatibility while extracting one boundary at a time.
