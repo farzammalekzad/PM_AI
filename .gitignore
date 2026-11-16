@@ -8,3 +8,7 @@ ollama_company_data/
 __pycache__/
 *.py[cod]
 .pytest_cache/
+
+# Local machine-specific real-model evaluation artifacts.
+reports/real_embedding*.json
+reports/real_embedding*.md

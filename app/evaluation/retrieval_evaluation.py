@@ -73,6 +73,17 @@ def hybrid_retriever(records, embedder, embedding_model):
     return lambda question: service.retrieve_documents(question, limit=5).records
 
 
+def materialize_embeddings(records, embedder, embedding_model):
+    """Build synthetic evaluation records with vectors from one explicit model."""
+    embedded = []
+    for record in records:
+        vector = embedder(record['content'], embedding_model)
+        if not isinstance(vector, list) or not vector or not all(math.isfinite(value) for value in vector):
+            raise ValueError('invalid_evaluation_embedding')
+        embedded.append(dict(record, embed_model=embedding_model, vector=json.dumps(vector)))
+    return embedded
+
+
 def semantic_retriever(records, embedder, embedding_model):
     """Evaluate semantic-only ranking with the production cosine threshold, not a fallback."""
     def retrieve(question):

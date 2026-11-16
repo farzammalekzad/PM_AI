@@ -12,7 +12,7 @@ if str(ROOT) not in sys.path:
 from app.evaluation.persian_retrieval_dataset import (
     SYNTHETIC_CASES, SYNTHETIC_DOCUMENTS, synthetic_embedder,
 )
-from app.evaluation.retrieval_evaluation import evaluate_dataset, markdown_summary
+from app.evaluation.retrieval_evaluation import evaluate_dataset, markdown_summary, materialize_embeddings
 from app.services.ollama_client import OllamaClient
 
 
@@ -35,6 +35,7 @@ def main():
                 raise ValueError('embedding_model_unavailable')
             vector = client.embed('سلام', model)
             embedder = client.embed
+            records = materialize_embeddings(SYNTHETIC_DOCUMENTS, embedder, model)
             report_kind = 'real_local_embedding'
         except Exception as error:
             report = evaluate_dataset(SYNTHETIC_DOCUMENTS, SYNTHETIC_CASES)
@@ -43,7 +44,7 @@ def main():
                                    'dimension': None, 'error': type(error).__name__}
             _write(arguments, report)
             return
-        report = evaluate_dataset(SYNTHETIC_DOCUMENTS, SYNTHETIC_CASES, embedder, model)
+        report = evaluate_dataset(records, SYNTHETIC_CASES, embedder, model)
         report['evaluation_kind'] = report_kind
         report['embedding'] = {'model': model, 'available': True, 'dimension': len(vector), 'error': None}
     else:

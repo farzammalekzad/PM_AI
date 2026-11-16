@@ -3,7 +3,7 @@ import unittest
 
 from app.evaluation.persian_retrieval_dataset import SYNTHETIC_CASES, SYNTHETIC_DOCUMENTS, synthetic_embedder
 from app.evaluation.retrieval_evaluation import (
-    evaluate_dataset, failure_analysis, markdown_summary, metric_summary,
+    evaluate_dataset, failure_analysis, markdown_summary, materialize_embeddings, metric_summary,
 )
 
 
@@ -58,6 +58,14 @@ class RetrievalEvaluationTests(unittest.TestCase):
                          'relevant_chunk_not_retrieved')
         self.assertEqual(failure_analysis({'relevant_ids': []}, ['D1-C1']),
                          'unanswerable_question_returned_sources')
+
+    def test_materialized_embeddings_replace_synthetic_metadata_and_dimensions(self):
+        records = materialize_embeddings(
+            SYNTHETIC_DOCUMENTS[:1], lambda text, model: [1.0, 2.0], 'real-local-model')
+        self.assertEqual(records[0]['embed_model'], 'real-local-model')
+        self.assertEqual(records[0]['vector'], '[1.0, 2.0]')
+        with self.assertRaises(ValueError):
+            materialize_embeddings(SYNTHETIC_DOCUMENTS[:1], lambda text, model: [float('nan')], 'model')
 
 
 if __name__ == '__main__':
