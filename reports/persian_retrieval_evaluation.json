@@ -15,11 +15,12 @@
         "recall_at_5": 0.9629629629629629,
         "mrr_at_5": 0.9259259259259259,
         "precision_at_5": 0.16774193548387104,
-        "mean_latency_ms": 0.24101290322580646,
-        "p95_latency_ms": 0.316,
+        "mean_latency_ms": 0.2383258064516129,
+        "p95_latency_ms": 0.315,
         "evaluated_questions": 31,
         "answerable_questions": 27,
-        "unanswerable_questions": 4
+        "unanswerable_questions": 4,
+        "unanswerable_false_positives": 1
       },
       "cases": [
         {
@@ -35,7 +36,7 @@
             "D2-C2",
             "D4-C2"
           ],
-          "latency_ms": 0.5996
+          "latency_ms": 0.587
         },
         {
           "question": "برای برنامه‌ریزی فعالیت‌ها چه اطلاعاتی لازم است؟",
@@ -46,7 +47,7 @@
           "retrieved_ids": [
             "D1-C1"
           ],
-          "latency_ms": 0.2237
+          "latency_ms": 0.2264
         },
         {
           "question": "برنامه ريزي پروژه و تاريخ پايان فعاليت‌ها چیست؟",
@@ -59,7 +60,7 @@
             "D1-C2",
             "D6-C2"
           ],
-          "latency_ms": 0.2269
+          "latency_ms": 0.2219
         },
         {
           "question": "تاخیر پروژه از چه زمانی باید گزارش شود؟",
@@ -74,7 +75,7 @@
             "D4-C1",
             "D5-C1"
           ],
-          "latency_ms": 0.2287
+          "latency_ms": 0.2195
         },
         {
           "question": "اگر کار سه روز عقب افتاد چه اقدامی لازم است؟",
@@ -87,7 +88,7 @@
             "D4-C1",
             "D6-C1"
           ],
-          "latency_ms": 0.2316
+          "latency_ms": 0.2239
         },
         {
           "question": "چه کسی از دیرکرد فعالیت‌ها مطلع می‌شود؟",
@@ -98,7 +99,7 @@
           "retrieved_ids": [
             "D1-C1"
           ],
-          "latency_ms": 0.2183
+          "latency_ms": 0.2097
         },
         {
           "question": "صورتجلسه باید چه تصمیم‌هایی را ثبت کند؟",
@@ -113,7 +114,7 @@
             "D7-C2",
             "D2-C2"
           ],
-          "latency_ms": 0.233
+          "latency_ms": 0.2219
         },
         {
           "question": "مسئول اقدام‌های جلسه در کدام سند مشخص می‌شود؟",
@@ -128,7 +129,7 @@
             "D4-C2",
             "D7-C2"
           ],
-          "latency_ms": 0.2258
+          "latency_ms": 0.2383
         },
         {
           "question": "چه کسانی در ابتدای صورتجلسه نوشته می‌شوند؟",
@@ -140,7 +141,7 @@
             "D2-C2",
             "D2-C1"
           ],
-          "latency_ms": 0.2173
+          "latency_ms": 0.312
         },
         {
           "question": "تغییر دامنه قرارداد چگونه معتبر می‌شود؟",
@@ -153,7 +154,7 @@
             "D3-C2",
             "D6-C2"
           ],
-          "latency_ms": 0.2183
+          "latency_ms": 0.2717
         },
         {
           "question": "اصلاح محدوده قرارداد به چه تاییدی نیاز دارد؟",
@@ -166,7 +167,7 @@
             "D3-C1",
             "D5-C2"
           ],
-          "latency_ms": 0.2238
+          "latency_ms": 0.2301
         },
         {
           "question": "برای فسخ قرارداد چه نوع اعلانی لازم است؟",
@@ -178,7 +179,7 @@
             "D3-C2",
             "D3-C1"
           ],
-          "latency_ms": 0.2936
+          "latency_ms": 0.315
         },
         {
           "question": "گزارش پیشرفت هفتگی چه بخش‌هایی دارد؟",
@@ -192,7 +193,7 @@
             "D6-C2",
             "D7-C1"
           ],
-          "latency_ms": 0.2253
+          "latency_ms": 0.2877
         },
         {
           "question": "موانع پروژه را کجا گزارش می‌کنیم؟",
@@ -207,7 +208,7 @@
             "D1-C1",
             "D7-C1"
           ],
-          "latency_ms": 0.225
+          "latency_ms": 0.2236
         },
         {
           "question": "ثبت ریسک شامل چه مشخصاتی است؟",
@@ -222,7 +223,7 @@
             "D2-C1",
             "D5-C1"
           ],
-          "latency_ms": 0.2374
+          "latency_ms": 0.2274
         },
         {
           "question": "درخواست مرخصی چگونه تایید می‌شود؟",
@@ -236,7 +237,7 @@
             "D5-C2",
             "D6-C1"
           ],
-          "latency_ms": 0.2994
+          "latency_ms": 0.2094
         },
         {
           "question": "تاييد مرخصي توسط چه کسی انجام می‌شود؟",
@@ -251,7 +252,7 @@
             "D4-C1",
             "D5-C2"
           ],
-          "latency_ms": 0.2696
+          "latency_ms": 0.2178
         },
         {
           "question": "برای خرید بزرگ چند استعلام لازم است؟",
@@ -262,7 +263,7 @@
           "retrieved_ids": [
             "D5-C2"
           ],
-          "latency_ms": 0.2219
+          "latency_ms": 0.2081
         },
         {
           "question": "واحد تدارکات چه خریدی را تایید می‌کند؟",
@@ -276,7 +277,7 @@
             "D5-C1",
             "D6-C1"
           ],
-          "latency_ms": 0.2156
+          "latency_ms": 0.2093
         },
         {
           "question": "تحویل کار پس از چه آزمونی انجام می‌شود؟",
@@ -288,7 +289,7 @@
             "D6-C1",
             "D4-C1"
           ],
-          "latency_ms": 0.2105
+          "latency_ms": 0.2072
         },
         {
           "question": "پذیرش محصول به چه معیارهایی وابسته است؟",
@@ -299,7 +300,7 @@
           "retrieved_ids": [
             "D6-C1"
           ],
-          "latency_ms": 0.2238
+          "latency_ms": 0.2046
         },
         {
           "question": "تغییرات مهم پروژه به چه کسانی ارسال می‌شود؟",
@@ -312,7 +313,7 @@
             "D1-C1",
             "D1-C2"
           ],
-          "latency_ms": 0.2188
+          "latency_ms": 0.2086
         },
         {
           "question": "اطلاع‌رسانی تغییرات پروژه برای ذی‌نفعان چگونه است؟",
@@ -326,7 +327,7 @@
             "D1-C2",
             "D7-C2"
           ],
-          "latency_ms": 0.2203
+          "latency_ms": 0.2097
         },
         {
           "question": "انحراف بودجه ماهانه چگونه بررسی می‌شود؟",
@@ -337,7 +338,7 @@
           "retrieved_ids": [
             "D7-C1"
           ],
-          "latency_ms": 0.2069
+          "latency_ms": 0.2065
         },
         {
           "question": "گزارش مالی چه مقایسه‌ای با بودجه دارد؟",
@@ -351,7 +352,7 @@
             "D4-C1",
             "D6-C2"
           ],
-          "latency_ms": 0.2194
+          "latency_ms": 0.2055
         },
         {
           "question": "حادثه ایمنی را چه زمانی باید ثبت کرد؟",
@@ -366,7 +367,7 @@
             "D2-C1",
             "D4-C2"
           ],
-          "latency_ms": 0.316
+          "latency_ms": 0.2118
         },
         {
           "question": "به چه کسی باید رخداد ایمنی را اطلاع داد؟",
@@ -380,14 +381,14 @@
             "D5-C1",
             "D6-C2"
           ],
-          "latency_ms": 0.2186
+          "latency_ms": 0.21
         },
         {
           "question": "سیاست شرکت درباره غذای کارکنان چیست؟",
           "category": "unanswerable",
           "relevant_ids": [],
           "retrieved_ids": [],
-          "latency_ms": 0.2
+          "latency_ms": 0.1974
         },
         {
           "question": "رمز عبور سامانه مالی چیست؟",
@@ -397,21 +398,21 @@
             "D5-C1",
             "D7-C1"
           ],
-          "latency_ms": 0.2031
+          "latency_ms": 0.2595
         },
         {
           "question": "دفتر شرکت در کدام شهر است؟",
           "category": "unanswerable",
           "relevant_ids": [],
           "retrieved_ids": [],
-          "latency_ms": 0.2042
+          "latency_ms": 0.2072
         },
         {
           "question": "مدل تلفن مدیرعامل چیست؟",
           "category": "unanswerable",
           "relevant_ids": [],
           "retrieved_ids": [],
-          "latency_ms": 0.195
+          "latency_ms": 0.1994
         }
       ],
       "failures": [
@@ -424,7 +425,7 @@
           "retrieved_ids": [
             "D1-C1"
           ],
-          "latency_ms": 0.2183,
+          "latency_ms": 0.2097,
           "reason": "relevant_chunk_not_retrieved"
         },
         {
@@ -435,7 +436,7 @@
             "D5-C1",
             "D7-C1"
           ],
-          "latency_ms": 0.2031,
+          "latency_ms": 0.2595,
           "reason": "unanswerable_question_returned_sources"
         }
       ]
@@ -449,11 +450,12 @@
         "recall_at_5": 1.0,
         "mrr_at_5": 0.9444444444444444,
         "precision_at_5": 0.17419354838709683,
-        "mean_latency_ms": 0.08174516129032258,
-        "p95_latency_ms": 0.0853,
+        "mean_latency_ms": 0.09413870967741936,
+        "p95_latency_ms": 0.15,
         "evaluated_questions": 31,
         "answerable_questions": 27,
-        "unanswerable_questions": 4
+        "unanswerable_questions": 4,
+        "unanswerable_false_positives": 0
       },
       "cases": [
         {
@@ -465,7 +467,7 @@
           "retrieved_ids": [
             "D1-C1"
           ],
-          "latency_ms": 0.1046
+          "latency_ms": 0.114
         },
         {
           "question": "برای برنامه‌ریزی فعالیت‌ها چه اطلاعاتی لازم است؟",
@@ -476,7 +478,7 @@
           "retrieved_ids": [
             "D1-C1"
           ],
-          "latency_ms": 0.0824
+          "latency_ms": 0.0825
         },
         {
           "question": "برنامه ريزي پروژه و تاريخ پايان فعاليت‌ها چیست؟",
@@ -487,7 +489,7 @@
           "retrieved_ids": [
             "D1-C1"
           ],
-          "latency_ms": 0.0809
+          "latency_ms": 0.0805
         },
         {
           "question": "تاخیر پروژه از چه زمانی باید گزارش شود؟",
@@ -498,7 +500,7 @@
           "retrieved_ids": [
             "D1-C2"
           ],
-          "latency_ms": 0.0804
+          "latency_ms": 0.0802
         },
         {
           "question": "اگر کار سه روز عقب افتاد چه اقدامی لازم است؟",
@@ -509,7 +511,7 @@
           "retrieved_ids": [
             "D1-C2"
           ],
-          "latency_ms": 0.0797
+          "latency_ms": 0.0816
         },
         {
           "question": "چه کسی از دیرکرد فعالیت‌ها مطلع می‌شود؟",
@@ -520,7 +522,7 @@
           "retrieved_ids": [
             "D1-C2"
           ],
-          "latency_ms": 0.0802
+          "latency_ms": 0.0804
         },
         {
           "question": "صورتجلسه باید چه تصمیم‌هایی را ثبت کند؟",
@@ -532,7 +534,7 @@
             "D2-C1",
             "D2-C2"
           ],
-          "latency_ms": 0.0818
+          "latency_ms": 0.15
         },
         {
           "question": "مسئول اقدام‌های جلسه در کدام سند مشخص می‌شود؟",
@@ -544,7 +546,7 @@
             "D2-C1",
             "D2-C2"
           ],
-          "latency_ms": 0.0808
+          "latency_ms": 0.1323
         },
         {
           "question": "چه کسانی در ابتدای صورتجلسه نوشته می‌شوند؟",
@@ -556,7 +558,7 @@
             "D2-C1",
             "D2-C2"
           ],
-          "latency_ms": 0.0808
+          "latency_ms": 0.1161
         },
         {
           "question": "تغییر دامنه قرارداد چگونه معتبر می‌شود؟",
@@ -568,7 +570,7 @@
             "D3-C1",
             "D3-C2"
           ],
-          "latency_ms": 0.0816
+          "latency_ms": 0.1579
         },
         {
           "question": "اصلاح محدوده قرارداد به چه تاییدی نیاز دارد؟",
@@ -580,7 +582,7 @@
             "D3-C1",
             "D3-C2"
           ],
-          "latency_ms": 0.0853
+          "latency_ms": 0.1207
         },
         {
           "question": "برای فسخ قرارداد چه نوع اعلانی لازم است؟",
@@ -592,7 +594,7 @@
             "D3-C1",
             "D3-C2"
           ],
-          "latency_ms": 0.0824
+          "latency_ms": 0.1319
         },
         {
           "question": "گزارش پیشرفت هفتگی چه بخش‌هایی دارد؟",
@@ -604,7 +606,7 @@
             "D4-C1",
             "D4-C2"
           ],
-          "latency_ms": 0.0812
+          "latency_ms": 0.1337
         },
         {
           "question": "موانع پروژه را کجا گزارش می‌کنیم؟",
@@ -616,7 +618,7 @@
             "D4-C1",
             "D4-C2"
           ],
-          "latency_ms": 0.0807
+          "latency_ms": 0.0825
         },
         {
           "question": "ثبت ریسک شامل چه مشخصاتی است؟",
@@ -628,7 +630,7 @@
             "D4-C1",
             "D4-C2"
           ],
-          "latency_ms": 0.0809
+          "latency_ms": 0.0814
         },
         {
           "question": "درخواست مرخصی چگونه تایید می‌شود؟",
@@ -639,7 +641,7 @@
           "retrieved_ids": [
             "D5-C1"
           ],
-          "latency_ms": 0.0804
+          "latency_ms": 0.0814
         },
         {
           "question": "تاييد مرخصي توسط چه کسی انجام می‌شود؟",
@@ -650,7 +652,7 @@
           "retrieved_ids": [
             "D5-C1"
           ],
-          "latency_ms": 0.0806
+          "latency_ms": 0.081
         },
         {
           "question": "برای خرید بزرگ چند استعلام لازم است؟",
@@ -661,7 +663,7 @@
           "retrieved_ids": [
             "D5-C2"
           ],
-          "latency_ms": 0.081
+          "latency_ms": 0.0812
         },
         {
           "question": "واحد تدارکات چه خریدی را تایید می‌کند؟",
@@ -672,7 +674,7 @@
           "retrieved_ids": [
             "D5-C2"
           ],
-          "latency_ms": 0.0808
+          "latency_ms": 0.0821
         },
         {
           "question": "تحویل کار پس از چه آزمونی انجام می‌شود؟",
@@ -683,7 +685,7 @@
           "retrieved_ids": [
             "D6-C1"
           ],
-          "latency_ms": 0.0808
+          "latency_ms": 0.0806
         },
         {
           "question": "پذیرش محصول به چه معیارهایی وابسته است؟",
@@ -694,7 +696,7 @@
           "retrieved_ids": [
             "D6-C1"
           ],
-          "latency_ms": 0.0814
+          "latency_ms": 0.081
         },
         {
           "question": "تغییرات مهم پروژه به چه کسانی ارسال می‌شود؟",
@@ -705,7 +707,7 @@
           "retrieved_ids": [
             "D6-C2"
           ],
-          "latency_ms": 0.0808
+          "latency_ms": 0.0805
         },
         {
           "question": "اطلاع‌رسانی تغییرات پروژه برای ذی‌نفعان چگونه است؟",
@@ -716,7 +718,7 @@
           "retrieved_ids": [
             "D6-C2"
           ],
-          "latency_ms": 0.0804
+          "latency_ms": 0.0811
         },
         {
           "question": "انحراف بودجه ماهانه چگونه بررسی می‌شود؟",
@@ -727,7 +729,7 @@
           "retrieved_ids": [
             "D7-C1"
           ],
-          "latency_ms": 0.0813
+          "latency_ms": 0.0818
         },
         {
           "question": "گزارش مالی چه مقایسه‌ای با بودجه دارد؟",
@@ -738,7 +740,7 @@
           "retrieved_ids": [
             "D7-C1"
           ],
-          "latency_ms": 0.0808
+          "latency_ms": 0.0807
         },
         {
           "question": "حادثه ایمنی را چه زمانی باید ثبت کرد؟",
@@ -749,7 +751,7 @@
           "retrieved_ids": [
             "D7-C2"
           ],
-          "latency_ms": 0.0813
+          "latency_ms": 0.0808
         },
         {
           "question": "به چه کسی باید رخداد ایمنی را اطلاع داد؟",
@@ -760,35 +762,35 @@
           "retrieved_ids": [
             "D7-C2"
           ],
-          "latency_ms": 0.0806
+          "latency_ms": 0.0813
         },
         {
           "question": "سیاست شرکت درباره غذای کارکنان چیست؟",
           "category": "unanswerable",
           "relevant_ids": [],
           "retrieved_ids": [],
-          "latency_ms": 0.0812
+          "latency_ms": 0.0816
         },
         {
           "question": "رمز عبور سامانه مالی چیست؟",
           "category": "unanswerable",
           "relevant_ids": [],
           "retrieved_ids": [],
-          "latency_ms": 0.0794
+          "latency_ms": 0.0791
         },
         {
           "question": "دفتر شرکت در کدام شهر است؟",
           "category": "unanswerable",
           "relevant_ids": [],
           "retrieved_ids": [],
-          "latency_ms": 0.0796
+          "latency_ms": 0.0792
         },
         {
           "question": "مدل تلفن مدیرعامل چیست؟",
           "category": "unanswerable",
           "relevant_ids": [],
           "retrieved_ids": [],
-          "latency_ms": 0.08
+          "latency_ms": 0.0792
         }
       ],
       "failures": []
@@ -802,11 +804,12 @@
         "recall_at_5": 1.0,
         "mrr_at_5": 0.9814814814814815,
         "precision_at_5": 0.17419354838709683,
-        "mean_latency_ms": 0.37584193548387096,
-        "p95_latency_ms": 0.59,
+        "mean_latency_ms": 0.3157870967741936,
+        "p95_latency_ms": 0.3803,
         "evaluated_questions": 31,
         "answerable_questions": 27,
-        "unanswerable_questions": 4
+        "unanswerable_questions": 4,
+        "unanswerable_false_positives": 1
       },
       "cases": [
         {
@@ -822,7 +825,7 @@
             "D2-C2",
             "D4-C2"
           ],
-          "latency_ms": 0.4564
+          "latency_ms": 0.3803
         },
         {
           "question": "برای برنامه‌ریزی فعالیت‌ها چه اطلاعاتی لازم است؟",
@@ -833,7 +836,7 @@
           "retrieved_ids": [
             "D1-C1"
           ],
-          "latency_ms": 0.329
+          "latency_ms": 0.3153
         },
         {
           "question": "برنامه ريزي پروژه و تاريخ پايان فعاليت‌ها چیست؟",
@@ -846,7 +849,7 @@
             "D1-C2",
             "D6-C2"
           ],
-          "latency_ms": 0.3238
+          "latency_ms": 0.3251
         },
         {
           "question": "تاخیر پروژه از چه زمانی باید گزارش شود؟",
@@ -861,7 +864,7 @@
             "D4-C1",
             "D5-C1"
           ],
-          "latency_ms": 0.3283
+          "latency_ms": 0.3199
         },
         {
           "question": "اگر کار سه روز عقب افتاد چه اقدامی لازم است؟",
@@ -874,7 +877,7 @@
             "D4-C1",
             "D6-C1"
           ],
-          "latency_ms": 0.6109
+          "latency_ms": 0.324
         },
         {
           "question": "چه کسی از دیرکرد فعالیت‌ها مطلع می‌شود؟",
@@ -886,7 +889,7 @@
             "D1-C2",
             "D1-C1"
           ],
-          "latency_ms": 0.4986
+          "latency_ms": 0.3074
         },
         {
           "question": "صورتجلسه باید چه تصمیم‌هایی را ثبت کند؟",
@@ -901,7 +904,7 @@
             "D5-C1",
             "D7-C2"
           ],
-          "latency_ms": 0.4526
+          "latency_ms": 0.3167
         },
         {
           "question": "مسئول اقدام‌های جلسه در کدام سند مشخص می‌شود؟",
@@ -916,7 +919,7 @@
             "D4-C2",
             "D7-C2"
           ],
-          "latency_ms": 0.5263
+          "latency_ms": 0.318
         },
         {
           "question": "چه کسانی در ابتدای صورتجلسه نوشته می‌شوند؟",
@@ -928,7 +931,7 @@
             "D2-C2",
             "D2-C1"
           ],
-          "latency_ms": 0.3793
+          "latency_ms": 0.3102
         },
         {
           "question": "تغییر دامنه قرارداد چگونه معتبر می‌شود؟",
@@ -941,7 +944,7 @@
             "D3-C2",
             "D6-C2"
           ],
-          "latency_ms": 0.321
+          "latency_ms": 0.3088
         },
         {
           "question": "اصلاح محدوده قرارداد به چه تاییدی نیاز دارد؟",
@@ -954,7 +957,7 @@
             "D3-C1",
             "D5-C2"
           ],
-          "latency_ms": 0.3246
+          "latency_ms": 0.3087
         },
         {
           "question": "برای فسخ قرارداد چه نوع اعلانی لازم است؟",
@@ -966,7 +969,7 @@
             "D3-C2",
             "D3-C1"
           ],
-          "latency_ms": 0.3188
+          "latency_ms": 0.3094
         },
         {
           "question": "گزارش پیشرفت هفتگی چه بخش‌هایی دارد؟",
@@ -981,7 +984,7 @@
             "D6-C2",
             "D7-C1"
           ],
-          "latency_ms": 0.325
+          "latency_ms": 0.3882
         },
         {
           "question": "موانع پروژه را کجا گزارش می‌کنیم؟",
@@ -996,7 +999,7 @@
             "D6-C2",
             "D1-C1"
           ],
-          "latency_ms": 0.3334
+          "latency_ms": 0.3237
         },
         {
           "question": "ثبت ریسک شامل چه مشخصاتی است؟",
@@ -1011,7 +1014,7 @@
             "D1-C2",
             "D2-C1"
           ],
-          "latency_ms": 0.35
+          "latency_ms": 0.3192
         },
         {
           "question": "درخواست مرخصی چگونه تایید می‌شود؟",
@@ -1025,7 +1028,7 @@
             "D5-C2",
             "D6-C1"
           ],
-          "latency_ms": 0.3299
+          "latency_ms": 0.3068
         },
         {
           "question": "تاييد مرخصي توسط چه کسی انجام می‌شود؟",
@@ -1040,7 +1043,7 @@
             "D4-C1",
             "D5-C2"
           ],
-          "latency_ms": 0.3567
+          "latency_ms": 0.3238
         },
         {
           "question": "برای خرید بزرگ چند استعلام لازم است؟",
@@ -1051,7 +1054,7 @@
           "retrieved_ids": [
             "D5-C2"
           ],
-          "latency_ms": 0.3852
+          "latency_ms": 0.3132
         },
         {
           "question": "واحد تدارکات چه خریدی را تایید می‌کند؟",
@@ -1065,7 +1068,7 @@
             "D5-C1",
             "D6-C1"
           ],
-          "latency_ms": 0.4215
+          "latency_ms": 0.3123
         },
         {
           "question": "تحویل کار پس از چه آزمونی انجام می‌شود؟",
@@ -1077,7 +1080,7 @@
             "D6-C1",
             "D4-C1"
           ],
-          "latency_ms": 0.4405
+          "latency_ms": 0.3079
         },
         {
           "question": "پذیرش محصول به چه معیارهایی وابسته است؟",
@@ -1088,7 +1091,7 @@
           "retrieved_ids": [
             "D6-C1"
           ],
-          "latency_ms": 0.59
+          "latency_ms": 0.3051
         },
         {
           "question": "تغییرات مهم پروژه به چه کسانی ارسال می‌شود؟",
@@ -1101,7 +1104,7 @@
             "D1-C1",
             "D1-C2"
           ],
-          "latency_ms": 0.3389
+          "latency_ms": 0.3101
         },
         {
           "question": "اطلاع‌رسانی تغییرات پروژه برای ذی‌نفعان چگونه است؟",
@@ -1115,7 +1118,7 @@
             "D1-C2",
             "D7-C2"
           ],
-          "latency_ms": 0.3239
+          "latency_ms": 0.3149
         },
         {
           "question": "انحراف بودجه ماهانه چگونه بررسی می‌شود؟",
@@ -1126,7 +1129,7 @@
           "retrieved_ids": [
             "D7-C1"
           ],
-          "latency_ms": 0.3103
+          "latency_ms": 0.3023
         },
         {
           "question": "گزارش مالی چه مقایسه‌ای با بودجه دارد؟",
@@ -1140,7 +1143,7 @@
             "D4-C1",
             "D6-C2"
           ],
-          "latency_ms": 0.3143
+          "latency_ms": 0.3092
         },
         {
           "question": "حادثه ایمنی را چه زمانی باید ثبت کرد؟",
@@ -1155,7 +1158,7 @@
             "D2-C1",
             "D4-C2"
           ],
-          "latency_ms": 0.416
+          "latency_ms": 0.3151
         },
         {
           "question": "به چه کسی باید رخداد ایمنی را اطلاع داد؟",
@@ -1169,14 +1172,14 @@
             "D5-C1",
             "D6-C2"
           ],
-          "latency_ms": 0.3326
+          "latency_ms": 0.3111
         },
         {
           "question": "سیاست شرکت درباره غذای کارکنان چیست؟",
           "category": "unanswerable",
           "relevant_ids": [],
           "retrieved_ids": [],
-          "latency_ms": 0.3041
+          "latency_ms": 0.2937
         },
         {
           "question": "رمز عبور سامانه مالی چیست؟",
@@ -1186,21 +1189,21 @@
             "D5-C1",
             "D7-C1"
           ],
-          "latency_ms": 0.3097
+          "latency_ms": 0.303
         },
         {
           "question": "دفتر شرکت در کدام شهر است؟",
           "category": "unanswerable",
           "relevant_ids": [],
           "retrieved_ids": [],
-          "latency_ms": 0.3023
+          "latency_ms": 0.2957
         },
         {
           "question": "مدل تلفن مدیرعامل چیست؟",
           "category": "unanswerable",
           "relevant_ids": [],
           "retrieved_ids": [],
-          "latency_ms": 0.2972
+          "latency_ms": 0.2903
         }
       ],
       "failures": [
@@ -1212,10 +1215,11 @@
             "D5-C1",
             "D7-C1"
           ],
-          "latency_ms": 0.3097,
+          "latency_ms": 0.303,
           "reason": "unanswerable_question_returned_sources"
         }
       ]
     }
-  ]
+  ],
+  "evaluation_kind": "mocked_embedding"
 }

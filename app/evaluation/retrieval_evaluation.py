@@ -27,6 +27,8 @@ def metric_summary(results):
         len(set(result['retrieved_ids'][:5]) & set(result['relevant_ids'])) / 5
         for result in results) / max(1, len(results))
     latencies = [result['latency_ms'] for result in results]
+    unanswerable_false_positives = sum(
+        1 for result in results if not result['relevant_ids'] and result['retrieved_ids'])
     return {
         'recall_at_3': recall_at(3),
         'recall_at_5': recall_at(5),
@@ -37,6 +39,7 @@ def metric_summary(results):
         'evaluated_questions': len(results),
         'answerable_questions': len(answerable),
         'unanswerable_questions': len(results) - len(answerable),
+        'unanswerable_false_positives': unanswerable_false_positives,
     }
 
 

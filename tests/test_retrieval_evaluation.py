@@ -21,6 +21,7 @@ class RetrievalEvaluationTests(unittest.TestCase):
         self.assertAlmostEqual(metrics['precision_at_5'], 2 / 15)
         self.assertEqual(metrics['mean_latency_ms'], 2.0)
         self.assertEqual(metrics['p95_latency_ms'], 3.0)
+        self.assertEqual(metrics['unanswerable_false_positives'], 0)
 
     def test_synthetic_dataset_has_required_scope_and_valid_labels(self):
         self.assertGreaterEqual(len(SYNTHETIC_CASES), 30)
