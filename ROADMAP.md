@@ -2,12 +2,13 @@
 
 ## Current architecture and end-to-end flow
 
-`ollama_persian_rag.py` remains the compatibility entry point and combines a standard-library HTTP server and inline HTML/JavaScript. SQLite connection configuration, migrations, backups, integrity diagnostics, and persistence operations are isolated in `app/db/`. Established environment settings are in `app/config.py`; local Ollama HTTP communication and NDJSON validation are in `app/services/ollama_client.py`; prompt construction and chat-stream persistence are in `app/services/prompt_builder.py` and `chat_service.py`; supported local document extraction and ingestion are in `document_extractor.py` and `document_ingestion.py`; Persian retrieval and citation formatting are in `retrieval_service.py` and `citation_service.py`.
+`ollama_persian_rag.py` remains the compatibility entry point and combines a standard-library HTTP server and inline HTML/JavaScript. SQLite connection configuration, migrations, backups, integrity diagnostics, and persistence operations are isolated in `app/db/`. Established environment settings are in `app/config.py`; local Ollama HTTP communication and NDJSON validation are in `app/services/ollama_client.py`; prompt construction and chat-stream persistence are in `app/services/prompt_builder.py` and `chat_service.py`; supported local document extraction and ingestion are in `document_extractor.py` and `document_ingestion.py`; Persian retrieval and citation formatting are in `retrieval_service.py` and `citation_service.py`; and read-only index coverage monitoring is in `rag_monitoring.py`.
 
 1. The Persian RTL UI sends a request to `/api/chat-stream`. The server retrieves approved knowledge and document chunks, loads prior messages, and streams local Ollama `/api/chat` NDJSON to the browser. User and assistant messages are stored only after a completed stream.
 2. Approved manual knowledge is stored in `knowledge` and retrieved through normalized lexical matching.
 3. A document arrives as base64, is extracted from TXT/DOCX/XLSX/PDF, chunked, hashed, and stored in `documents` and `doc_chunks`. If `OLLAMA_EMBED_MODEL` is explicitly configured, chunk embeddings come from the local Ollama endpoint; otherwise lexical retrieval remains active.
 4. Retrieval combines lexical scoring with cosine similarity only for vectors produced by the configured embedding model. Prompt citations use `K#` and `D#-C#` identifiers.
+5. The local `/api/rag-monitoring` endpoint combines existing health diagnostics with SQLite-derived embedding coverage. Per-request retrieval diagnostics are sent only with the corresponding chat source event and displayed in the Persian RTL monitoring view.
 
 Current strengths include localhost-only binding, parameterized SQL, baseline CSP, `textContent` UI insertion, streaming, size limits, citations, Persian `lang="fa" dir="rtl"`, and `unicode-bidi: plaintext` messages.
 
@@ -54,7 +55,7 @@ Create compatibility wrappers around existing functions first, then move one end
 
 1. **Stabilize:** completed baseline migration, health diagnostics, safe backup helper, integrity checks, structured local logging, and regression coverage.
 2. **Modularize:** database, configuration, Ollama-client, prompt-builder, chat-service, document-extractor, document-ingestion, retrieval, and citation boundaries are extracted. Next extract HTTP handlers and static UI assets without changing streaming or schema contracts.
-3. **RAG diagnostics:** record embedding model/dimension/vector version, provide explicit opt-in re-indexing, create a Persian quality set, and preserve citation spans.
+3. **RAG diagnostics:** completed read-only embedding health, index coverage, model/dimension mismatch, and request-scoped fallback diagnostics with a Persian RTL dashboard. Next, record vector version through an approved additive migration, provide explicit opt-in re-indexing, create a Persian quality set, and preserve citation spans.
 4. **Document lifecycle:** add ingestion jobs, failure state, preview, archive/restore, and testable extractor interfaces.
 5. **Read-only SQL Server:** only after explicit approval; use external credentials, network allowlists, query templates, timeouts, row limits, and auditing. Never execute free-form SQL from a prompt.
 6. **UI and operations:** improve Persian RTL accessibility, establish access control appropriate to the threat model, and add offline Windows packaging, backup, and retention operations.
@@ -67,3 +68,4 @@ Create compatibility wrappers around existing functions first, then move one end
 - Localhost without authentication is appropriate only for a single-user workstation. Shared-workstation use requires an explicit threat model and authorization design.
 - Scanned PDFs, advanced spreadsheets, and rich Word content are not fully extracted.
 - Citations identify retrieved evidence but do not prove that a model response is grounded in it; a Persian groundedness evaluation set is still needed.
+- Index monitoring reads the current records but does not validate vector normalization or repair invalid/mismatched vectors; remediation must remain explicit and opt-in.

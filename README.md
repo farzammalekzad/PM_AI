@@ -26,6 +26,10 @@ At startup, the application applies only additive migrations and records schema 
 
 `GET /api/health` is a local diagnostic endpoint. It reports local Ollama connectivity, embedding-model availability, SQLite connectivity, schema version, document/chunk counts, integrity-check result, and foreign-key violation count. The embedding object also reports model presence, vector dimension when available, a non-sensitive error category, and whether lexical fallback is active. Operational logs are local and structured in `ollama_company_data/assistant.log`; they intentionally exclude request bodies, document content, prompts, embeddings, and credentials.
 
+`GET /api/rag-monitoring` is a read-only local monitoring endpoint. Its `health` object preserves the `/api/health` diagnostics, while its `index` object reports document and chunk totals, vector coverage, embedding-model distribution, vector dimensions, invalid vectors, model incompatibility, and configured-model dimension mismatches. It never returns document text, vectors, prompts, or credentials. The Persian RTL interface exposes the same data through **پایش RAG و Embedding** and only refreshes when opened or when its manual refresh button is selected.
+
+The source event of `/api/chat-stream` may additionally include `retrieval_diagnostics`. These diagnostics are request-scoped: they describe the retrieval that created that source event, including actual mode (`lexical` or `hybrid`), embedding attempt/result, fallback category, candidate/selected chunk counts, citation identifiers, and elapsed milliseconds. They do not claim semantic retrieval merely because the embedding health check succeeded.
+
 Supported document formats are TXT, MD, CSV, JSON, LOG, DOCX, XLSX, and text-based PDF. DOCX/XLSX archive member counts and uncompressed sizes are limited. Scanned PDFs need a separately approved local OCR solution.
 
 ## Tests
@@ -39,7 +43,7 @@ Tests use synthetic files and temporary SQLite databases only. They do not conta
 
 ## Architecture direction
 
-The entry point remains `ollama_persian_rag.py` for compatibility. SQLite responsibilities are isolated in `app/db/`; `app/config.py` centralizes the established environment configuration; `app/services/ollama_client.py` owns local Ollama HTTP requests; chat services coordinate bounded prompts and streaming; document services preserve local formats and atomic persistence; and retrieval/citation services preserve Persian ranking and evidence identifiers while providing internal diagnostics. The next incremental boundaries are documented in [ROADMAP.md](ROADMAP.md): HTTP handlers, static UI assets, and focused tests. Preserve API and database compatibility while extracting one boundary at a time.
+The entry point remains `ollama_persian_rag.py` for compatibility. SQLite responsibilities are isolated in `app/db/`; `app/config.py` centralizes the established environment configuration; `app/services/ollama_client.py` owns local Ollama HTTP requests; chat services coordinate bounded prompts and streaming; document services preserve local formats and atomic persistence; retrieval/citation services preserve Persian ranking and evidence identifiers; and `rag_monitoring.py` calculates read-only coverage statistics. The next incremental boundaries are documented in [ROADMAP.md](ROADMAP.md): HTTP handlers, static UI assets, and focused tests. Preserve API and database compatibility while extracting one boundary at a time.
 
 ## Prompt budgeting
 
