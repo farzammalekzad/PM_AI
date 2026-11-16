@@ -2,7 +2,7 @@
 
 ## Current architecture and end-to-end flow
 
-`ollama_persian_rag.py` remains the compatibility entry point and combines a standard-library HTTP server and inline HTML/JavaScript. SQLite connection configuration, migrations, backups, integrity diagnostics, and persistence operations are isolated in `app/db/`. Established environment settings are in `app/config.py`; local Ollama HTTP communication and NDJSON validation are in `app/services/ollama_client.py`; prompt construction and chat-stream persistence are in `app/services/prompt_builder.py` and `chat_service.py`; supported local document extraction and ingestion are in `document_extractor.py` and `document_ingestion.py`; Persian retrieval and citation formatting are in `retrieval_service.py` and `citation_service.py`; and read-only index coverage monitoring is in `rag_monitoring.py`.
+`ollama_persian_rag.py` remains the compatibility entry point. Its standard-library HTTP server, response helpers, allowlisted static delivery, and routes are isolated in `app/web/`; Persian HTML, CSS, and JavaScript are local assets there. SQLite connection configuration, migrations, backups, integrity diagnostics, and persistence operations are isolated in `app/db/`. Established environment settings are in `app/config.py`; local Ollama HTTP communication and NDJSON validation are in `app/services/ollama_client.py`; prompt construction and chat-stream persistence are in `app/services/prompt_builder.py` and `chat_service.py`; supported local document extraction and ingestion are in `document_extractor.py` and `document_ingestion.py`; Persian retrieval and citation formatting are in `retrieval_service.py` and `citation_service.py`; and read-only index coverage monitoring is in `rag_monitoring.py`.
 
 1. The Persian RTL UI sends a request to `/api/chat-stream`. The server retrieves approved knowledge and document chunks, loads prior messages, and streams local Ollama `/api/chat` NDJSON to the browser. User and assistant messages are stored only after a completed stream.
 2. Approved manual knowledge is stored in `knowledge` and retrieved through normalized lexical matching.
@@ -54,7 +54,7 @@ Create compatibility wrappers around existing functions first, then move one end
 ## Phased plan
 
 1. **Stabilize:** completed baseline migration, health diagnostics, safe backup helper, integrity checks, structured local logging, and regression coverage.
-2. **Modularize:** database, configuration, Ollama-client, prompt-builder, chat-service, document-extractor, document-ingestion, retrieval, and citation boundaries are extracted. Next extract HTTP handlers and static UI assets without changing streaming or schema contracts.
+2. **Modularize:** database, configuration, Ollama-client, prompt-builder, chat-service, document-extractor, document-ingestion, retrieval, citation, HTTP-handler, response-helper, and static-asset boundaries are extracted. Next reduce compatibility-entry-point wiring and add focused handler integration tests without changing streaming or schema contracts.
 3. **RAG diagnostics:** completed read-only embedding health, index coverage, model/dimension mismatch, request-scoped fallback diagnostics with a Persian RTL dashboard, and a reproducible synthetic Persian retrieval evaluation. Next, record vector version through an approved additive migration, provide explicit opt-in re-indexing, create a reviewed Persian quality set, and preserve citation spans.
 4. **Document lifecycle:** add ingestion jobs, failure state, preview, archive/restore, and testable extractor interfaces.
 5. **Read-only SQL Server:** only after explicit approval; use external credentials, network allowlists, query templates, timeouts, row limits, and auditing. Never execute free-form SQL from a prompt.
@@ -64,7 +64,6 @@ Create compatibility wrappers around existing functions first, then move one end
 
 - Exact approved Ollama/Gemma and embedding versions, as well as hardware capacity, remain unspecified. Automatic model changes and re-indexing remain prohibited.
 - The first migration sets a version marker after ensuring the historical schema exists. Before any schema-changing migration, run and review `PRAGMA foreign_key_check` against a backed-up live database.
-- The current CSP permits inline script/style because the UI remains embedded. Replace it with hashes or nonces when static assets are extracted.
 - Localhost without authentication is appropriate only for a single-user workstation. Shared-workstation use requires an explicit threat model and authorization design.
 - Scanned PDFs, advanced spreadsheets, and rich Word content are not fully extracted.
 - Citations identify retrieved evidence but do not prove that a model response is grounded in it; a Persian groundedness evaluation set is still needed.

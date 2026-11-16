@@ -52,6 +52,12 @@ python scripts/evaluate_persian_retrieval.py --without-embeddings --json reports
 
 The first command uses a deterministic mocked local embedder to compare lexical, semantic-only, and existing hybrid retrieval. The second records semantic and hybrid as explicitly unavailable; it never substitutes lexical results. `Recall@3` and `Recall@5` are macro relevant-chunk recall over answerable questions, `MRR@5` is the mean reciprocal rank of the first relevant chunk, and `Precision@5` is macro precision with a fixed denominator of five across all questions, including unanswerable ones. Reports include per-question identifiers, latency, and non-sensitive failure categories. A generated baseline is tracked in [reports/persian_retrieval_evaluation.md](reports/persian_retrieval_evaluation.md) and [reports/persian_retrieval_evaluation.json](reports/persian_retrieval_evaluation.json).
 
+## Web assets and local HTTP server
+
+The compatibility entry point still starts the application, but local HTTP routes now live in `app/web/handlers.py`, response helpers in `app/web/responses.py`, and server construction in `app/web/server.py`. The Persian page, stylesheet, and JavaScript are separate local files under `app/web/templates/` and `app/web/static/`.
+
+Only `/static/styles.css` and `/static/app.js` are served; the server does not map arbitrary paths to the filesystem. The page CSP permits only same-origin scripts, styles, and API calls. The interface continues to use `textContent`, `lang="fa" dir="rtl"`, `unicode-bidi: plaintext`, and `dir="auto"` for mixed identifiers.
+
 ## Architecture direction
 
 The entry point remains `ollama_persian_rag.py` for compatibility. SQLite responsibilities are isolated in `app/db/`; `app/config.py` centralizes the established environment configuration; `app/services/ollama_client.py` owns local Ollama HTTP requests; chat services coordinate bounded prompts and streaming; document services preserve local formats and atomic persistence; retrieval/citation services preserve Persian ranking and evidence identifiers; and `rag_monitoring.py` calculates read-only coverage statistics. The next incremental boundaries are documented in [ROADMAP.md](ROADMAP.md): HTTP handlers, static UI assets, and focused tests. Preserve API and database compatibility while extracting one boundary at a time.
