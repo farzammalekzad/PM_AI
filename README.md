@@ -39,4 +39,8 @@ Tests use synthetic files and temporary SQLite databases only. They do not conta
 
 ## Architecture direction
 
-The entry point remains `ollama_persian_rag.py` for compatibility. SQLite responsibilities are isolated in `app/db/`; `app/config.py` centralizes the established environment configuration; and `app/services/ollama_client.py` owns local Ollama HTTP requests and streaming validation. The next incremental boundaries are documented in [ROADMAP.md](ROADMAP.md): chat/RAG/ingestion services, HTTP handlers, static UI assets, and focused tests. Preserve API and database compatibility while extracting one boundary at a time.
+The entry point remains `ollama_persian_rag.py` for compatibility. SQLite responsibilities are isolated in `app/db/`; `app/config.py` centralizes the established environment configuration; `app/services/ollama_client.py` owns local Ollama HTTP requests; and `app/services/chat_service.py` and `prompt_builder.py` coordinate chat turns and bounded prompts. The next incremental boundaries are documented in [ROADMAP.md](ROADMAP.md): retrieval/ingestion services, HTTP handlers, static UI assets, and focused tests. Preserve API and database compatibility while extracting one boundary at a time.
+
+## Prompt budgeting
+
+Prompt construction reserves at least 256 tokens, or one quarter of `num_ctx`, for model output. Without an approved tokenizer dependency, it estimates two characters per input token. System instructions and the current user turn are allocated first, followed by retrieved evidence and newest conversation history. Any shortened section receives a Persian truncation marker where capacity permits and is recorded by identifier-only diagnostics; source contents are never logged. This is deterministic but remains an estimate, so Ollama still enforces the final token limit.
