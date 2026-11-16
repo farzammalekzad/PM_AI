@@ -2,7 +2,7 @@
 
 ## Current architecture and end-to-end flow
 
-`ollama_persian_rag.py` remains the compatibility entry point and combines a standard-library HTTP server, inline HTML/JavaScript, document extraction, and retrieval. SQLite connection configuration, migrations, backups, integrity diagnostics, and persistence operations are isolated in `app/db/`. Established environment settings are in `app/config.py`; local Ollama HTTP communication and NDJSON validation are in `app/services/ollama_client.py`; prompt construction and chat-stream persistence are in `app/services/prompt_builder.py` and `chat_service.py`.
+`ollama_persian_rag.py` remains the compatibility entry point and combines a standard-library HTTP server, inline HTML/JavaScript, and retrieval. SQLite connection configuration, migrations, backups, integrity diagnostics, and persistence operations are isolated in `app/db/`. Established environment settings are in `app/config.py`; local Ollama HTTP communication and NDJSON validation are in `app/services/ollama_client.py`; prompt construction and chat-stream persistence are in `app/services/prompt_builder.py` and `chat_service.py`; supported local document extraction and ingestion are in `document_extractor.py` and `document_ingestion.py`.
 
 1. The Persian RTL UI sends a request to `/api/chat-stream`. The server retrieves approved knowledge and document chunks, loads prior messages, and streams local Ollama `/api/chat` NDJSON to the browser. User and assistant messages are stored only after a completed stream.
 2. Approved manual knowledge is stored in `knowledge` and retrieved through normalized lexical matching.
@@ -53,7 +53,7 @@ Create compatibility wrappers around existing functions first, then move one end
 ## Phased plan
 
 1. **Stabilize:** completed baseline migration, health diagnostics, safe backup helper, integrity checks, structured local logging, and regression coverage.
-2. **Modularize:** database, configuration, Ollama-client, prompt-builder, and chat-service boundaries are extracted. Next extract retrieval and ingestion services, then web boundaries without changing streaming or schema contracts.
+2. **Modularize:** database, configuration, Ollama-client, prompt-builder, chat-service, document-extractor, and document-ingestion boundaries are extracted. Next extract retrieval, then web boundaries without changing streaming or schema contracts.
 3. **RAG diagnostics:** record embedding model/dimension/vector version, provide explicit opt-in re-indexing, create a Persian quality set, and preserve citation spans.
 4. **Document lifecycle:** add ingestion jobs, failure state, preview, archive/restore, and testable extractor interfaces.
 5. **Read-only SQL Server:** only after explicit approval; use external credentials, network allowlists, query templates, timeouts, row limits, and auditing. Never execute free-form SQL from a prompt.
