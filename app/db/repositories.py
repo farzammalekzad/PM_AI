@@ -95,3 +95,13 @@ class Repositories:
                              (chat_identifier, 'user', user_content, timestamp))
             database.execute('INSERT INTO messages(chat_id,role,content,created_at) VALUES(?,?,?,?)',
                              (chat_identifier, 'assistant', assistant_content, timestamp))
+
+    def create_chat_with_exchange(self, chat_identifier, title, user_content, assistant_content, timestamp):
+        """Persist a successful first turn atomically to avoid empty new chats."""
+        with self.connect() as database:
+            database.execute('INSERT INTO chats(id,title,created_at) VALUES (?,?,?)',
+                             (chat_identifier, title, timestamp))
+            database.execute('INSERT INTO messages(chat_id,role,content,created_at) VALUES(?,?,?,?)',
+                             (chat_identifier, 'user', user_content, timestamp))
+            database.execute('INSERT INTO messages(chat_id,role,content,created_at) VALUES(?,?,?,?)',
+                             (chat_identifier, 'assistant', assistant_content, timestamp))
