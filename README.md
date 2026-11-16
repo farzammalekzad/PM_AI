@@ -39,4 +39,4 @@ Tests use synthetic files and temporary SQLite databases only. They do not conta
 
 ## Architecture direction
 
-The current implementation intentionally remains a single file during stabilization. The incremental target layout is documented in [ROADMAP.md](ROADMAP.md): configuration, database/migrations, services for chat/RAG/ingestion, HTTP handlers, static UI assets, and focused tests. Preserve API and database compatibility while extracting one boundary at a time.
+The entry point remains `ollama_persian_rag.py` for compatibility. SQLite responsibilities are now isolated in `app/db/`: connection configuration, additive migrations, backup/integrity diagnostics, and parameterized repositories. The next incremental boundaries are documented in [ROADMAP.md](ROADMAP.md): configuration, chat/RAG/ingestion services, HTTP handlers, static UI assets, and focused tests. Preserve API and database compatibility while extracting one boundary at a time.
