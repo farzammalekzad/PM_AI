@@ -58,6 +58,17 @@ The compatibility entry point still starts the application, but local HTTP route
 
 Only `/static/styles.css` and `/static/app.js` are served; the server does not map arbitrary paths to the filesystem. The page CSP permits only same-origin scripts, styles, and API calls. The interface continues to use `textContent`, `lang="fa" dir="rtl"`, `unicode-bidi: plaintext`, and `dir="auto"` for mixed identifiers.
 
+## Optional local Ollama validation
+
+The following commands are opt-in and only call the configured local Ollama URL. They never download, switch, remove, or re-index models. Use explicit installed model names.
+
+```powershell
+python scripts/validate_local_ollama.py --embedding-model YOUR_LOCAL_EMBEDDING_MODEL --chat-model YOUR_LOCAL_GEMMA_MODEL
+python scripts/evaluate_persian_retrieval.py --real-ollama --ollama-url http://127.0.0.1:11434 --embedding-model YOUR_LOCAL_EMBEDDING_MODEL --json reports/real_embedding.json --markdown reports/real_embedding.md
+```
+
+The validation tool reports model listing, embedding availability and dimension, and a short Persian Gemma chat check. The real-evaluation command uses only the synthetic corpus. If the explicitly named embedding model cannot be reached, semantic and hybrid results are marked unavailable and are never replaced with mocked or lexical results.
+
 ## Architecture direction
 
 The entry point remains `ollama_persian_rag.py` for compatibility. SQLite responsibilities are isolated in `app/db/`; `app/config.py` centralizes the established environment configuration; `app/services/ollama_client.py` owns local Ollama HTTP requests; chat services coordinate bounded prompts and streaming; document services preserve local formats and atomic persistence; retrieval/citation services preserve Persian ranking and evidence identifiers; and `rag_monitoring.py` calculates read-only coverage statistics. The next incremental boundaries are documented in [ROADMAP.md](ROADMAP.md): HTTP handlers, static UI assets, and focused tests. Preserve API and database compatibility while extracting one boundary at a time.

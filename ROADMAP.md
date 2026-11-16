@@ -54,7 +54,7 @@ Create compatibility wrappers around existing functions first, then move one end
 ## Phased plan
 
 1. **Stabilize:** completed baseline migration, health diagnostics, safe backup helper, integrity checks, structured local logging, and regression coverage.
-2. **Modularize:** database, configuration, Ollama-client, prompt-builder, chat-service, document-extractor, document-ingestion, retrieval, citation, HTTP-handler, response-helper, and static-asset boundaries are extracted. Next reduce compatibility-entry-point wiring and add focused handler integration tests without changing streaming or schema contracts.
+2. **Modularize:** database, configuration, Ollama-client, prompt-builder, chat-service, document-extractor, document-ingestion, retrieval, citation, HTTP-handler, response-helper, and static-asset boundaries are extracted. Socket-level local HTTP coverage and opt-in local-model validation are now available. Next reduce compatibility-entry-point wiring without changing streaming or schema contracts.
 3. **RAG diagnostics:** completed read-only embedding health, index coverage, model/dimension mismatch, request-scoped fallback diagnostics with a Persian RTL dashboard, and a reproducible synthetic Persian retrieval evaluation. Next, record vector version through an approved additive migration, provide explicit opt-in re-indexing, create a reviewed Persian quality set, and preserve citation spans.
 4. **Document lifecycle:** add ingestion jobs, failure state, preview, archive/restore, and testable extractor interfaces.
 5. **Read-only SQL Server:** only after explicit approval; use external credentials, network allowlists, query templates, timeouts, row limits, and auditing. Never execute free-form SQL from a prompt.
