@@ -120,6 +120,39 @@ class OfflineAssistantRegressionTests(unittest.TestCase):
         self.assertEqual(handler.code, 200)
         self.assertEqual(handler.result, expected)
 
+    def test_existing_get_endpoint_response_contracts(self):
+        chat_id = 'c' * 32
+        with app.connect() as database:
+            database.execute(
+                'INSERT INTO knowledge(title,category,content,source,approved,created_at,updated_at) '
+                'VALUES(?,?,?,?,?,?,?)',
+                ('Synthetic fact', 'Synthetic', 'Synthetic content', '', 1, 'now', 'now'))
+            database.execute('INSERT INTO chats(id,title,created_at) VALUES(?,?,?)',
+                             (chat_id, 'Synthetic chat', 'now'))
+            database.execute('INSERT INTO messages(chat_id,role,content,created_at) VALUES(?,?,?,?)',
+                             (chat_id, 'user', 'Synthetic message', 'now'))
+        app.ingest_document('endpoint.txt', b'Synthetic document content', '')
+
+        class FakeHandler:
+            def __init__(self, path):
+                self.path = path
+
+            def json_response(self, result, code=200):
+                self.result = result
+                self.code = code
+
+        cases = [
+            ('/api/knowledge', 'facts'),
+            ('/api/documents', 'documents'),
+            ('/api/chats', 'chats'),
+            ('/api/chat-history?id=' + chat_id, 'messages'),
+        ]
+        for path, key in cases:
+            handler = FakeHandler(path)
+            app.Handler.do_GET(handler)
+            self.assertEqual(handler.code, 200)
+            self.assertIn(key, handler.result)
+
     def test_interrupted_stream_does_not_store_partial_messages(self):
         class InterruptedResponse:
             def __enter__(self):
@@ -152,6 +185,40 @@ class OfflineAssistantRegressionTests(unittest.TestCase):
             app.Handler.chat_stream(handler, request)
         with app.connect() as db:
             self.assertEqual(db.execute('SELECT COUNT(*) FROM messages').fetchone()[0], 0)
+
+    def test_completed_stream_persists_exchange(self):
+        class CompletedResponse:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *unused):
+                return False
+
+            def __iter__(self):
+                yield b'{"message":{"content":"Synthetic answer"},"done":true}\n'
+
+        class FakeHandler:
+            def __init__(self):
+                self.wfile = io.BytesIO()
+
+            def send_response(self, *unused):
+                pass
+
+            def send_header(self, *unused):
+                pass
+
+            def end_headers(self):
+                pass
+
+        handler = FakeHandler()
+        request = {'chat_id': None, 'question': 'Synthetic question', 'content': 'Synthetic question',
+                   'model': 'gemma-synthetic', 'ctx': 4096}
+        with mock.patch.object(app.urllib.request, 'urlopen', return_value=CompletedResponse()):
+            app.Handler.chat_stream(handler, request)
+        with app.connect() as db:
+            rows = db.execute('SELECT role,content FROM messages ORDER BY id').fetchall()
+        self.assertEqual([(row['role'], row['content']) for row in rows],
+                         [('user', 'Synthetic question'), ('assistant', 'Synthetic answer')])
 
 
 if __name__ == '__main__':
