@@ -98,7 +98,11 @@ class OfflineAssistantRegressionTests(unittest.TestCase):
             self.assertEqual(restored.execute('SELECT COUNT(*) FROM documents').fetchone()[0], 1)
 
     def test_health_reports_failed_ollama_connection_without_database_failure(self):
-        with mock.patch.object(app.urllib.request, 'urlopen', side_effect=app.urllib.error.URLError('offline')):
+        class OfflineClient:
+            def is_available(self):
+                return False
+
+        with mock.patch.object(app, 'ollama_client', return_value=OfflineClient()):
             health = app.health_status()
         self.assertFalse(health['ollama']['connected'])
         self.assertTrue(health['database']['connected'])
@@ -119,6 +123,24 @@ class OfflineAssistantRegressionTests(unittest.TestCase):
             app.Handler.do_GET(handler)
         self.assertEqual(handler.code, 200)
         self.assertEqual(handler.result, expected)
+
+    def test_models_endpoint_preserves_response_contract(self):
+        class FakeHandler:
+            path = '/api/models'
+
+            def json_response(self, result, code=200):
+                self.result = result
+                self.code = code
+
+        class ModelClient:
+            def list_models(self):
+                return ['gemma4-synthetic']
+
+        handler = FakeHandler()
+        with mock.patch.object(app, 'ollama_client', return_value=ModelClient()):
+            app.Handler.do_GET(handler)
+        self.assertEqual(handler.code, 200)
+        self.assertEqual(handler.result, {'models': ['gemma4-synthetic']})
 
     def test_existing_get_endpoint_response_contracts(self):
         chat_id = 'c' * 32
@@ -154,15 +176,9 @@ class OfflineAssistantRegressionTests(unittest.TestCase):
             self.assertIn(key, handler.result)
 
     def test_interrupted_stream_does_not_store_partial_messages(self):
-        class InterruptedResponse:
-            def __enter__(self):
-                return self
-
-            def __exit__(self, *unused):
-                return False
-
-            def __iter__(self):
-                yield b'{"message":{"content":"partial"},"done":false}\n'
+        class InterruptedClient:
+            def stream_chat(self, *unused):
+                yield {'message': {'content': 'partial'}, 'done': False}
                 raise ConnectionResetError('synthetic interruption')
 
         class FakeHandler:
@@ -181,21 +197,15 @@ class OfflineAssistantRegressionTests(unittest.TestCase):
         handler = FakeHandler()
         request = {'chat_id': None, 'question': 'سوال ساختگی', 'content': 'سوال ساختگی',
                    'model': 'gemma-synthetic', 'ctx': 4096}
-        with mock.patch.object(app.urllib.request, 'urlopen', return_value=InterruptedResponse()):
+        with mock.patch.object(app, 'ollama_client', return_value=InterruptedClient()):
             app.Handler.chat_stream(handler, request)
         with app.connect() as db:
             self.assertEqual(db.execute('SELECT COUNT(*) FROM messages').fetchone()[0], 0)
 
     def test_completed_stream_persists_exchange(self):
-        class CompletedResponse:
-            def __enter__(self):
-                return self
-
-            def __exit__(self, *unused):
-                return False
-
-            def __iter__(self):
-                yield b'{"message":{"content":"Synthetic answer"},"done":true}\n'
+        class CompletedClient:
+            def stream_chat(self, *unused):
+                return iter([{'message': {'content': 'Synthetic answer'}, 'done': True}])
 
         class FakeHandler:
             def __init__(self):
@@ -213,7 +223,7 @@ class OfflineAssistantRegressionTests(unittest.TestCase):
         handler = FakeHandler()
         request = {'chat_id': None, 'question': 'Synthetic question', 'content': 'Synthetic question',
                    'model': 'gemma-synthetic', 'ctx': 4096}
-        with mock.patch.object(app.urllib.request, 'urlopen', return_value=CompletedResponse()):
+        with mock.patch.object(app, 'ollama_client', return_value=CompletedClient()):
             app.Handler.chat_stream(handler, request)
         with app.connect() as db:
             rows = db.execute('SELECT role,content FROM messages ORDER BY id').fetchall()
