@@ -7,6 +7,7 @@ import tempfile
 import unittest
 import zipfile
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,6 +28,7 @@ class OfflineAssistantRegressionTests(unittest.TestCase):
 
     def test_persian_normalization_and_chunk_overlap(self):
         self.assertEqual(app.norm('  كاربَر\u200c ي  '), 'کاربر ی')
+        self.assertEqual(app.norm('سَلام'), 'سلام')
         chunks = app.chunk_document('الف ' * 100, chunk_chars=80, overlap=15)
         self.assertGreater(len(chunks), 1)
         self.assertTrue(all(chunks))
@@ -48,6 +50,8 @@ class OfflineAssistantRegressionTests(unittest.TestCase):
     def test_rejects_empty_filename_after_path_sanitization(self):
         with self.assertRaisesRegex(ValueError, 'نام فایل'):
             app.ingest_document('/', b'plain synthetic text', '')
+        with self.assertRaisesRegex(ValueError, 'پشتیبانی'):
+            app.ingest_document('unsupported.exe', b'synthetic content', '')
 
     def test_docx_and_xlsx_extraction(self):
         docx = io.BytesIO()
@@ -71,6 +75,83 @@ class OfflineAssistantRegressionTests(unittest.TestCase):
         with self.assertRaises(sqlite3.IntegrityError):
             with app.connect() as db:
                 db.execute("INSERT INTO messages(chat_id,role,content,created_at) VALUES ('missing','user','x','now')")
+
+    def test_existing_database_is_migrated_without_losing_history(self):
+        chat_id = 'a' * 32
+        with app.connect() as db:
+            db.execute('INSERT INTO chats(id,title,created_at) VALUES (?, ?, ?)',
+                       (chat_id, 'Synthetic chat', 'now'))
+            db.execute('INSERT INTO messages(chat_id,role,content,created_at) VALUES (?, ?, ?, ?)',
+                       (chat_id, 'user', 'Synthetic history', 'now'))
+            db.execute('PRAGMA user_version=0')
+        app.initialize()
+        with app.connect() as db:
+            self.assertEqual(db.execute('PRAGMA user_version').fetchone()[0], app.SCHEMA_VERSION)
+            self.assertEqual(db.execute('SELECT content FROM messages').fetchone()[0], 'Synthetic history')
+
+    def test_backup_uses_sqlite_api_and_is_restorable(self):
+        app.ingest_document('backup.txt', 'داده ساختگی برای پشتیبان'.encode(), '')
+        backup = app.backup_database(Path(self.temp_dir.name) / 'backup.sqlite3')
+        self.assertTrue(backup.exists())
+        with sqlite3.connect(backup) as restored:
+            self.assertEqual(restored.execute('PRAGMA integrity_check').fetchone()[0], 'ok')
+            self.assertEqual(restored.execute('SELECT COUNT(*) FROM documents').fetchone()[0], 1)
+
+    def test_health_reports_failed_ollama_connection_without_database_failure(self):
+        with mock.patch.object(app.urllib.request, 'urlopen', side_effect=app.urllib.error.URLError('offline')):
+            health = app.health_status()
+        self.assertFalse(health['ollama']['connected'])
+        self.assertTrue(health['database']['connected'])
+        self.assertEqual(health['database']['integrity'], 'ok')
+        self.assertEqual(health['embedding']['status'], 'not_configured')
+
+    def test_health_endpoint_returns_diagnostics(self):
+        class FakeHandler:
+            path = '/api/health'
+
+            def json_response(self, result, code=200):
+                self.result = result
+                self.code = code
+
+        handler = FakeHandler()
+        expected = {'ollama': {'connected': False}, 'embedding': {}, 'database': {'connected': True}}
+        with mock.patch.object(app, 'health_status', return_value=expected):
+            app.Handler.do_GET(handler)
+        self.assertEqual(handler.code, 200)
+        self.assertEqual(handler.result, expected)
+
+    def test_interrupted_stream_does_not_store_partial_messages(self):
+        class InterruptedResponse:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *unused):
+                return False
+
+            def __iter__(self):
+                yield b'{"message":{"content":"partial"},"done":false}\n'
+                raise ConnectionResetError('synthetic interruption')
+
+        class FakeHandler:
+            def __init__(self):
+                self.wfile = io.BytesIO()
+
+            def send_response(self, *unused):
+                pass
+
+            def send_header(self, *unused):
+                pass
+
+            def end_headers(self):
+                pass
+
+        handler = FakeHandler()
+        request = {'chat_id': None, 'question': 'سوال ساختگی', 'content': 'سوال ساختگی',
+                   'model': 'gemma-synthetic', 'ctx': 4096}
+        with mock.patch.object(app.urllib.request, 'urlopen', return_value=InterruptedResponse()):
+            app.Handler.chat_stream(handler, request)
+        with app.connect() as db:
+            self.assertEqual(db.execute('SELECT COUNT(*) FROM messages').fetchone()[0], 0)
 
 
 if __name__ == '__main__':
