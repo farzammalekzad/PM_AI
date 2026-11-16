@@ -140,8 +140,9 @@ class OfflineAssistantRegressionTests(unittest.TestCase):
         self.assertEqual(handler.result, expected)
         self.assertIn('<html lang="fa" dir="rtl">', app.PAGE)
         self.assertIn('openMonitoring', app.PAGE)
-        self.assertIn('/api/rag-monitoring', app.PAGE)
-        self.assertIn('textContent', app.PAGE)
+        javascript = (ROOT / 'app' / 'web' / 'static' / 'app.js').read_text(encoding='utf-8')
+        self.assertIn('/api/rag-monitoring', javascript)
+        self.assertIn('textContent', javascript)
 
     def test_models_endpoint_preserves_response_contract(self):
         class FakeHandler:
