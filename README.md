@@ -1,38 +1,42 @@
-# دستیار سازمانی آفلاین فارسی
+# Offline Persian Company AI Assistant
 
-یک رابط محلی و آفلاین برای گفت‌وگوی فارسی با Ollama/Gemma، دانش تأییدشده سازمانی، تاریخچه SQLite و بازیابی از اسناد (RAG) است. برنامه به‌صورت پیش‌فرض فقط روی `127.0.0.1` اجرا می‌شود و هیچ API خارجی ندارد.
+This is a local, offline interface for Persian conversations with Ollama/Gemma, approved organizational knowledge, SQLite chat history, and document retrieval (RAG). It binds to `127.0.0.1` by default and uses no external API.
 
-## اجرا
+## Run
 
-نیازمندی اصلی Python 3.10+ و یک سرویس محلی Ollama است. برای PDF متنی، `pypdf` اختیاری است. از Anaconda Prompt در ویندوز:
+The application requires Python 3.10+ and a local Ollama service. `pypdf` is optional and only needed for text-based PDF extraction. From Anaconda Prompt on Windows:
 
 ```powershell
 python ollama_persian_rag.py
 ```
 
-مرورگر در `http://127.0.0.1:8765/` باز می‌شود. متغیرهای اختیاری:
+Open `http://127.0.0.1:8765/`. Optional environment variables:
 
-- `OLLAMA_URL` (پیش‌فرض `http://127.0.0.1:11434`)
-- `OLLAMA_UI_PORT` (پیش‌فرض `8765`)
-- `OLLAMA_EMBED_MODEL` (فقط در صورت انتخاب آگاهانهٔ مدل embedding محلی)
+- `OLLAMA_URL` — defaults to `http://127.0.0.1:11434`
+- `OLLAMA_UI_PORT` — defaults to `8765`
+- `OLLAMA_EMBED_MODEL` — an explicitly selected local embedding model only
 
-مدل Gemma از فهرست مدل‌های محلی Ollama انتخاب می‌شود. برنامه مدل embedding را دانلود، تغییر یا جایگزین نمی‌کند.
+Gemma models are selected from locally available Ollama models. The application does not download, change, or re-index embedding models automatically.
 
-## داده و ایمنی
+## Data safety and operations
 
-داده‌ها در `ollama_company_data/company_memory.sqlite3` هستند. آن فایل و همراهان WAL/SHM آن را حذف یا به Git اضافه نکنید. پیش از ارتقا، وقتی برنامه بسته است، از کل پوشه یک کپی بگیرید. اسناد به SQLite وارد می‌شوند؛ اصل فایل نگهداری نمی‌شود. PDFهای اسکن‌شده نیازمند OCR محلی هستند.
+The live database is `ollama_company_data/company_memory.sqlite3`. Never delete, reset, or commit it or its WAL/SHM companions. Before an upgrade, stop the application and copy the complete data directory. Imported documents are stored as extracted chunks; the original uploaded file is not retained.
 
-فرمت‌های اسناد: TXT, MD, CSV, JSON, LOG, DOCX, XLSX و PDF متنی. DOCX/XLSX آرشیوهای محدودشده‌اند تا ورودی فشردهٔ غیرعادی حافظه را مصرف نکند.
+At startup, the application applies only additive migrations and records schema version `1` with `PRAGMA user_version`. Existing tables and records are retained. `backup_database()` creates a consistent SQLite backup through SQLite's backup API; by default it writes a new timestamped database under `ollama_company_data/backups/`. It never overwrites an existing backup.
 
-## آزمون
+`GET /api/health` is a local diagnostic endpoint. It reports local Ollama connectivity, embedding-model availability, SQLite connectivity, schema version, document/chunk counts, integrity-check result, and foreign-key violation count. Operational logs are local and structured in `ollama_company_data/assistant.log`; they intentionally exclude request bodies, document content, prompts, embeddings, and credentials.
+
+Supported document formats are TXT, MD, CSV, JSON, LOG, DOCX, XLSX, and text-based PDF. DOCX/XLSX archive member counts and uncompressed sizes are limited. Scanned PDFs need a separately approved local OCR solution.
+
+## Tests
 
 ```powershell
 python -m unittest discover -s tests -v
 python -m py_compile ollama_persian_rag.py
 ```
 
-این آزمون‌ها دادهٔ ساختگی و SQLite موقت استفاده می‌کنند؛ به Ollama، شبکه یا پایگاه‌دادهٔ واقعی دست نمی‌زنند.
+Tests use synthetic files and temporary SQLite databases only. They do not contact Ollama or access the live database.
 
-## معماری هدف
+## Architecture direction
 
-کد فعلی تک‌فایل است. مسیر هدف در [ROADMAP.md](ROADMAP.md): `app/config.py`، لایه‌های `db/` و migration، `services/` برای chat/RAG/ingest، `web/` برای HTTP و دارایی‌های رابط، و `tests/`. این جداسازی باید به‌صورت مرحله‌ای و با حفظ قراردادهای API و داده انجام شود.
+The current implementation intentionally remains a single file during stabilization. The incremental target layout is documented in [ROADMAP.md](ROADMAP.md): configuration, database/migrations, services for chat/RAG/ingestion, HTTP handlers, static UI assets, and focused tests. Preserve API and database compatibility while extracting one boundary at a time.

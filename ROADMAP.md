@@ -1,43 +1,46 @@
-# ارزیابی معماری و نقشهٔ راه
+# Architecture Assessment and Roadmap
 
-## وضعیت موجود و جریان کامل
+## Current architecture and end-to-end flow
 
-`ollama_persian_rag.py` یک HTTP server استاندارد Python، HTML/JS درون‌خطی و SQLite را در یک فایل گرد هم می‌آورد.
+`ollama_persian_rag.py` currently combines a standard-library HTTP server, inline HTML/JavaScript, SQLite, document extraction, retrieval, and Ollama integration.
 
-1. رابط RTL درخواست را به `/api/chat-stream` می‌فرستد؛ server دانش تأییدشده و chunkهای سند را بازیابی می‌کند، history را می‌خواند، سپس `/api/chat` محلی Ollama را به NDJSON مرورگر stream می‌کند. فقط پس از پاسخ کامل، پیام کاربر و پاسخ در `messages` ذخیره می‌شوند.
-2. دانش دستی در `knowledge` ثبت، و با tokenهای نرمال‌شده به‌صورت lexical رتبه‌بندی می‌شود.
-3. سند با base64 می‌رسد، متن TXT/DOCX/XLSX/PDF استخراج، chunk و هش می‌شود و در `documents` و `doc_chunks` ذخیره می‌گردد. اگر `OLLAMA_EMBED_MODEL` تعیین شده باشد، embedding هر chunk از Ollama محلی دریافت می‌شود؛ در غیر این صورت lexical fallback فعال است.
-4. RAG برای مدل embedding دقیقاً هم‌نام، cosine و lexical score را ترکیب می‌کند و citationهای `K#` و `D#-C#` به prompt و UI می‌افزاید.
+1. The Persian RTL UI sends a request to `/api/chat-stream`. The server retrieves approved knowledge and document chunks, loads prior messages, and streams local Ollama `/api/chat` NDJSON to the browser. User and assistant messages are stored only after a completed stream.
+2. Approved manual knowledge is stored in `knowledge` and retrieved through normalized lexical matching.
+3. A document arrives as base64, is extracted from TXT/DOCX/XLSX/PDF, chunked, hashed, and stored in `documents` and `doc_chunks`. If `OLLAMA_EMBED_MODEL` is explicitly configured, chunk embeddings come from the local Ollama endpoint; otherwise lexical retrieval remains active.
+4. Retrieval combines lexical scoring with cosine similarity only for vectors produced by the configured embedding model. Prompt citations use `K#` and `D#-C#` identifiers.
 
-نکات مثبت: bind محلی، SQL پارامتری، CSP پایه، استفاده از `textContent`، stream، محدودیت اندازه و citation اولیه وجود دارد. RTL پایه نیز درست است: `lang=fa dir=rtl`، textarea RTL، و پیام‌ها `unicode-bidi: plaintext` دارند.
+Current strengths include localhost-only binding, parameterized SQL, baseline CSP, `textContent` UI insertion, streaming, size limits, citations, Persian `lang="fa" dir="rtl"`, and `unicode-bidi: plaintext` messages.
 
-## مسائل اولویت‌دار
+## Stabilization completed in this phase
 
-| اولویت | مسئله | اثر / اقدام |
+- Every application SQLite connection uses a busy timeout and foreign-key enforcement.
+- Schema initialization is backward-compatible and idempotent. `PRAGMA user_version=1` records the existing schema through an additive migration; no tables, rows, or vectors are rewritten.
+- `database_status()` runs `integrity_check`, `foreign_key_check`, and reports schema/document/chunk counts.
+- `backup_database()` uses SQLite's backup API and refuses to overwrite backups.
+- `GET /api/health` reports non-sensitive local Ollama, embedding, and SQLite diagnostics.
+- Rotating structured local logs record operational metadata only, never prompts, documents, embeddings, request bodies, or credentials.
+- Synthetic tests cover legacy-database migration, backup restoration, failed Ollama connectivity, interrupted streams, invalid uploads, Persian normalization, archive limits, retrieval, and foreign keys.
+
+## Prioritized remaining issues
+
+| Priority | Issue | Recommended action |
 |---|---|---|
-| P0 | کد، HTML، DB و منطق Ollama در یک فایل‌اند | جداسازی مرحله‌ای با حفظ endpointها و قرارداد DB |
-| P0 | migration versioned، backup/restore و integrity check وجود ندارد | migration افزایشی، `PRAGMA user_version`، backup امن و آزمون migration |
-| P0 | پاسخ نیمه‌کاره ذخیره نمی‌شود و خطای stream audit ندارد | وضعیت پیام/درخواست، logging محلی چرخشی و آزمون قطع اتصال |
-| P1 | بودجهٔ prompt بر مبنای کاراکتر است و `MAX_CONTEXT` استفاده نمی‌شود | prompt builder با budget صریح و آزمون overflow |
-| P1 | embedding در مسیر درخواست و به‌صورت ترتیبی است | job state محلی، diagnostics مدل/ابعاد، retry محدود و cancellation |
-| P1 | بازیابی lexical با substring و scan کامل DB است | tokenization فارسی آزموده، metadata/citation، FTS یا index محلی پس از migration |
-| P1 | PDF فقط متن داخلی؛ جدول/شماره صفحه/source span حفظ نمی‌شود | extractor interface، page citations و OCR محلی اختیاری |
-| P1 | delete سند فوراً دائمی است | تأیید server-side، audit و backup/restore پیش از UI بهبود |
-| P2 | UI embedded و accessibility/keyboard/error states محدود است | دارایی‌های جدا، RTL visual tests، وضعیت stream و citation قابل‌کلیک |
-| P2 | هیچ auth محلی، نقش یا سیاست نگهداری نیست | ابتدا threat model؛ اگر multi-user شد، auth محلی و RBAC |
+| P0 | Code, HTML, SQLite, and Ollama logic remain in one file. | Extract compatibility-preserving modules one boundary at a time. |
+| P0 | Interrupted streams leave an empty chat record and do not preserve partial-output audit state. | Add an additive request/message status migration and explicit local audit policy. |
+| P1 | Prompt budgeting is character-based and `MAX_CONTEXT` is not enforced end-to-end. | Add a tested prompt builder with an explicit budget. |
+| P1 | Embeddings are generated synchronously during ingestion. | Add local job state, bounded retry/cancellation, and model/dimension diagnostics without automatic re-indexing. |
+| P1 | Lexical retrieval scans all records and uses substring matching. | Evaluate Persian tokenization and local FTS behind an additive migration. |
+| P1 | PDF, DOCX, and XLSX extraction does not retain complete page/table/source spans. | Introduce a tested extractor interface and richer citations. |
+| P1 | Document deletion is permanent once confirmed in the UI. | Design archive/restore and audit behavior before changing the endpoint. |
+| P2 | The inline UI has limited accessibility, keyboard behavior, and error states. | Extract static assets while retaining Persian RTL and API contracts. |
+| P2 | There is no authentication, role model, or retention policy. | Establish a deployment threat model before adding local access controls. |
 
-## بهبودهای ایمن این مرحله
-
-- foreign key enforcement برای همهٔ connectionها فعال شد.
-- نرمال‌سازی retrieval، اعراب عربی/فارسی را حذف می‌کند تا fallback واژگانی کمتر miss کند.
-- DOCX/XLSX علاوه بر اندازهٔ عضو، سقف تعداد عضو و مجموع uncompressed دارند.
-- چهار آزمون استاندارد-library با DB و فایل‌های ساختگی افزوده شدند.
-
-## ساختار پیشنهادی (هدف، نه مهاجرت فوری)
+## Target structure (future, not a migration instruction)
 
 ```text
 app/
-  config.py  db/{connection.py,migrations.py,repositories.py}
+  config.py
+  db/{connection.py,migrations.py,repositories.py}
   services/{chat.py,ollama.py,retrieval.py,ingestion.py,extraction.py}
   web/{server.py,handlers.py,static/}
   domain/{models.py,errors.py}
@@ -45,22 +48,22 @@ tests/{test_retrieval.py,test_ingestion.py,test_api.py,test_migrations.py}
 scripts/{backup.py,verify_db.py}
 ```
 
-ابتدا wrapperهای سازگار پیرامون تابع‌های فعلی بسازید، سپس هر endpoint را یکی‌یکی انتقال دهید. schema فعلی (`knowledge`, `chats`, `messages`, `documents`, `doc_chunks`) قرارداد داده است و نباید بازنویسی یا drop شود.
+Create compatibility wrappers around existing functions first, then move one endpoint or service at a time. The existing schema (`knowledge`, `chats`, `messages`, `documents`, and `doc_chunks`) is a data contract and must not be dropped or recreated.
 
-## فازها
+## Phased plan
 
-1. **Stabilize:** test matrix، logging امن، health check، backup/verify script و migration framework افزایشی.
-2. **Modularize:** config/DB/repository/service/web را پشت API فعلی استخراج کنید؛ API streaming و schema را ثابت نگه دارید.
-3. **RAG diagnostics:** ثبت مدل/بعد/vector version، re-index صریح و opt-in، quality set فارسی و citation/page span.
-4. **Document lifecycle:** ingestion job، وضعیت/خطا، preview، archive/restore و extractorهای قابل‌آزمون.
-5. **Read-only SQL Server:** connector اختیاری، credential خارج از Git، network allowlist، query templates، timeout/row limit/audit. هیچ SQL آزاد از prompt اجرا نشود.
-6. **UI و عملیات:** UI حرفه‌ای RTL، accessibility، access control متناسب با threat model، backup، retention، offline Windows packaging.
+1. **Stabilize:** completed baseline migration, health diagnostics, safe backup helper, integrity checks, structured local logging, and regression coverage.
+2. **Modularize:** extract configuration, database, repository, service, and web boundaries without changing streaming or schema contracts.
+3. **RAG diagnostics:** record embedding model/dimension/vector version, provide explicit opt-in re-indexing, create a Persian quality set, and preserve citation spans.
+4. **Document lifecycle:** add ingestion jobs, failure state, preview, archive/restore, and testable extractor interfaces.
+5. **Read-only SQL Server:** only after explicit approval; use external credentials, network allowlists, query templates, timeouts, row limits, and auditing. Never execute free-form SQL from a prompt.
+6. **UI and operations:** improve Persian RTL accessibility, establish access control appropriate to the threat model, and add offline Windows packaging, backup, and retention operations.
 
-## ریسک‌ها و تصمیم‌های باز
+## Remaining risks and decisions
 
-- نسخهٔ دقیق Ollama/Gemma، ظرفیت سخت‌افزار و مدل embedding مجاز مشخص نیست؛ re-index خودکار ممنوع بماند.
-- تغییر `foreign_keys=ON` ممکن است دادهٔ تاریخی orphan را هنگام عملیات آینده آشکار کند؛ پیش از migration با `PRAGMA foreign_key_check` گزارش گرفته شود.
-- CSP فعلی به inline script/style نیاز دارد؛ هنگام جداکردن UI باید nonce/hash جایگزین شود.
-- ورودی محلی بدون auth برای کاربر واحد مناسب است، نه workstation مشترک یا شبکه؛ دامنهٔ استقرار باید تعیین شود.
-- استخراج PDFهای اسکن‌شده، XLSXهای پیچیده (formula/date/style) و DOCXهای دارای جدول/تصویر پوشش کامل ندارند.
-- citation نشان می‌دهد چه چیزی بازیابی شده، نه اینکه مدل واقعاً فقط بر همان evidence تکیه کرده است؛ ارزیابی groundedness لازم است.
+- Exact approved Ollama/Gemma and embedding versions, as well as hardware capacity, remain unspecified. Automatic model changes and re-indexing remain prohibited.
+- The first migration sets a version marker after ensuring the historical schema exists. Before any schema-changing migration, run and review `PRAGMA foreign_key_check` against a backed-up live database.
+- The current CSP permits inline script/style because the UI remains embedded. Replace it with hashes or nonces when static assets are extracted.
+- Localhost without authentication is appropriate only for a single-user workstation. Shared-workstation use requires an explicit threat model and authorization design.
+- Scanned PDFs, advanced spreadsheets, and rich Word content are not fully extracted.
+- Citations identify retrieved evidence but do not prove that a model response is grounded in it; a Persian groundedness evaluation set is still needed.
