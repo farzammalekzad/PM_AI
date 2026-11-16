@@ -4,6 +4,8 @@ import uuid
 from dataclasses import dataclass
 from datetime import datetime
 
+from app.services.citation_service import source_metadata
+
 
 @dataclass
 class ChatSession:
@@ -23,11 +25,7 @@ class ChatSession:
         """Yield source and content events, persisting only non-empty completed output."""
         yield {
             'chat_id': self.chat_id,
-            'source_ids': [fact['id'] for fact in self.facts],
-            'doc_sources': [
-                'D%s-C%s (%s)' % (document['document_id'], document['chunk_no'], document['name'])
-                for document in self.documents
-            ],
+            **source_metadata(self.facts, self.documents),
         }
         full = []
         completed = False

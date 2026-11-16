@@ -1,6 +1,8 @@
 """Deterministic, dependency-free prompt construction for Persian chat requests."""
 from dataclasses import dataclass
 
+from app.services.citation_service import evidence_items
+
 
 SYSTEM_PROMPT = (
     'شما دستیار سازمانی شرکت هستید. به فارسی و دقیق پاسخ دهید. '
@@ -83,17 +85,7 @@ class PromptBuilder:
         )
 
     def _sources(self, facts, documents):
-        items = []
-        for fact in facts:
-            identifier = 'K' + str(fact['id'])
-            items.append((identifier,
-                          '[' + identifier + '] ' + fact['title'] + ' | دسته: ' + fact['category'] +
-                          ' | منبع: ' + (fact['source'] or 'ثبت دستی') + '\n' + fact['content']))
-        for document in documents:
-            identifier = 'D%s-C%s' % (document['document_id'], document['chunk_no'])
-            items.append((identifier,
-                          '[' + identifier + '] سند: ' + document['name'] + '\n' + document['content']))
-        return items
+        return evidence_items(facts, documents)
 
     def _allocate_sources(self, items, budget, truncated):
         if budget <= 0:

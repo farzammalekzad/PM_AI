@@ -31,6 +31,8 @@ from app.services.document_ingestion import DocumentIngestionService
 from app.services.document_ingestion import chunk_document as service_chunk_document
 from app.services.ollama_client import OllamaClient
 from app.services.prompt_builder import PromptBuilder
+from app.services.retrieval_service import RetrievalService
+from app.services.retrieval_service import normalize_persian, tokenize_persian
 
 BASE = Path(__file__).resolve().parent
 CONFIG = load_config(BASE)
@@ -139,34 +141,15 @@ def health_status():
 
 
 def norm(text):
-    normalized = str(text).lower().replace('ي', 'ی').replace('ك', 'ک').replace('‌', ' ')
-    # Diacritics are optional in Persian writing; retaining them causes the
-    # lexical fallback to miss otherwise identical words.
-    normalized = re.sub(r'[\u064b-\u065f\u0670]', '', normalized)
-    return re.sub(r'\s+', ' ', normalized).strip()
+    """Compatibility wrapper for Persian normalization."""
+    return normalize_persian(text)
 
 
 def search_knowledge(question, limit=5):
-    """Simple offline lexical retrieval; no embedding / semantic search yet."""
-    terms = [t for t in re.findall(r'[\w\u0600-\u06ff]{3,}', norm(question))
-             if t not in {'برای', 'چگونه', 'درباره', 'میخواهم', 'میشود', 'چیست', 'کنید', 'لطفا', 'اینکه', 'همه', 'اطلاعات', 'شرکت', 'دارد'}]
-    terms = list(dict.fromkeys(terms))[:24]
-    rows = repositories().approved_knowledge()
-    scored = []
-    for r in rows:
-        title, content, category = norm(r['title']), norm(r['content']), norm(r['category'])
-        score = sum((5 if t in title else 0) + (2 if t in category else 0) + (1 if t in content else 0) for t in terms)
-        if score:
-            scored.append((score, r))
-    scored.sort(key=lambda s:(-s[0], s[1]['id']))
-    # If there were no meaningful matching terms, do not inject unrelated company facts.
-    return [dict(r) for _, r in scored[:limit]]
-
-
-PERSIAN_STOP = {'این','آن','های','برای','است','هست','باشد','شده','درباره','چگونه','چه','چرا','شرکت','لطفا','لطفاً','بگو','کن','کنید','را','از','در','به','با','یا','و','که','یک','آیا','اطلاعات'}
+    return retrieval_service().search_knowledge(question, limit)
 
 def tokenize(text):
-    return set(t for t in re.findall(r'[\w\u0600-\u06ff]{3,}',norm(text)) if t not in PERSIAN_STOP)
+    return tokenize_persian(text)
 
 def chunk_document(text, chunk_chars=1300, overlap=180):
     """Compatibility wrapper for the established retrieval chunk boundaries."""
@@ -180,6 +163,11 @@ def chat_service():
     """Create the compatibility chat coordinator for the current application wiring."""
     return ChatService(repositories, ollama_client, search_knowledge, search_documents,
                        PromptBuilder(), ALLOWED_CONTEXT_WINDOWS)
+
+
+def retrieval_service():
+    """Create the compatibility retrieval service using the configured local model."""
+    return RetrievalService(repositories, ollama_embedding, EMBED_MODEL)
 
 
 def document_extractor():
@@ -196,35 +184,7 @@ def ingest_document(name, raw, model):
     return document_ingestion_service().ingest(name, raw, model)
 
 def search_documents(query,limit=5):
-    """Hybrid cosine/term scoring; semantic only for vectors indexed with selected model."""
-    records = repositories().document_records()
-    words=tokenize(query)
-    model=EMBED_MODEL
-    qvec=None
-    if model and any(r['embed_model']==model and r['vector'] for r in records):
-        try:qvec=ollama_embedding(query,model)
-        except Exception:pass # Safe lexical fallback if embedding service unavailable.
-    ranked=[]
-    for r in records:
-        body=norm(r['content']);title=norm(r['name'])
-        hits=sum(2 if t in title else 0 for t in words)+sum(1 for t in words if t in body)
-        lex=hits/max(1,len(words))
-        sem=None
-        if qvec is not None and r['embed_model']==model and r['vector']:
-            try:
-                vec=json.loads(r['vector'])
-                if len(vec)==len(qvec):sem=sum(a*b for a,b in zip(qvec,vec))
-            except (ValueError,TypeError):pass
-        if sem is None:
-            if not hits:continue
-            score=lex
-        else:
-            # Skip weak semantic matches without keyword overlap.
-            if sem<0.38 and not hits:continue
-            score=1.8*sem+0.5*min(lex,3)
-        ranked.append((score,dict(r)))
-    ranked.sort(key=lambda v:-v[0])
-    return [r for _,r in ranked[:limit]]
+    return retrieval_service().retrieve_documents(query, limit).records
 
 
 def document_text(name, content):
