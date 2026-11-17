@@ -12,13 +12,18 @@ from urllib.parse import parse_qs, urlsplit
 from app.web.responses import json_response, send_bytes
 
 
-STATIC_TYPES = {'styles.css': 'text/css; charset=utf-8', 'app.js': 'application/javascript; charset=utf-8'}
+STATIC_TYPES = {
+    'styles.css': 'text/css; charset=utf-8',
+    'app.js': 'application/javascript; charset=utf-8',
+    'fonts/Vazir.woff2': 'font/woff2',
+    'fonts/Vazir-Bold.woff2': 'font/woff2',
+}
 POST_PATHS = frozenset({
     '/api/knowledge-save', '/api/knowledge-delete', '/api/chat-stream', '/api/extract',
     '/api/document-add', '/api/document-delete', '/api/document-delete-confirmed',
     '/api/document-metadata', '/api/document-replace',
 })
-PAGE_CSP = "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'"
+PAGE_CSP = "default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'"
 
 
 def create_handler(dependencies, asset_root):

@@ -53,6 +53,7 @@ class WebExtractionTests(unittest.TestCase):
         self.assertIn('/static/styles.css', body)
         self.assertIn('/static/app.js', body)
         self.assertIn("script-src 'self'", page.response_headers['Content-Security-Policy'])
+        self.assertIn("font-src 'self'", page.response_headers['Content-Security-Policy'])
         self.assertNotIn('http://', body)
         self.assertNotIn('https://', body)
         script = self._get('/static/app.js')
@@ -64,13 +65,32 @@ class WebExtractionTests(unittest.TestCase):
         self.assertIn('keydown', script.wfile.getvalue().decode('utf-8'))
         styles = self._get('/static/styles.css')
         self.assertEqual(styles.response_headers['Content-Type'], 'text/css; charset=utf-8')
-        self.assertIn('unicode-bidi:plaintext', styles.wfile.getvalue().decode('utf-8'))
+        css = styles.wfile.getvalue().decode('utf-8')
+        self.assertIn('unicode-bidi:plaintext', css)
+        self.assertIn('@font-face', css)
+        self.assertIn('font-display:swap', css)
+        self.assertIn('/static/fonts/Vazir.woff2', css)
+        self.assertIn('font-family:"Vazir"', css)
+        self.assertIn('ui-monospace', css)
+
+    def test_vazir_fonts_are_explicitly_allowlisted_with_correct_mime_type(self):
+        regular = self._get('/static/fonts/Vazir.woff2')
+        bold = self._get('/static/fonts/Vazir-Bold.woff2')
+        self.assertEqual(regular.status, 200)
+        self.assertEqual(bold.status, 200)
+        self.assertEqual(regular.response_headers['Content-Type'], 'font/woff2')
+        self.assertEqual(bold.response_headers['Content-Type'], 'font/woff2')
+        self.assertGreater(len(regular.wfile.getvalue()), 1000)
 
     def test_static_paths_are_allowlisted_and_cannot_traverse(self):
         traversal = self._get('/static/../templates/index.html')
         self.assertEqual(traversal.status, 404)
         unknown = self._get('/static/missing.js')
         self.assertEqual(unknown.status, 404)
+        font_traversal = self._get('/static/fonts/../styles.css')
+        self.assertEqual(font_traversal.status, 404)
+        unknown_font = self._get('/static/fonts/unknown.woff2')
+        self.assertEqual(unknown_font.status, 404)
 
     def test_invalid_content_type_is_rejected_before_body_processing(self):
         headers = Message()
