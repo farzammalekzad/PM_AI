@@ -45,6 +45,22 @@ class DatabaseLayerTests(unittest.TestCase):
             self.assertTrue({'page_start', 'page_end', 'heading', 'worksheet', 'row_start', 'row_end'} <= chunk_columns)
             self.assertEqual(database.execute('PRAGMA user_version').fetchone()[0], SCHEMA_VERSION)
 
+    def test_message_mode_migration_preserves_legacy_messages_and_records_new_turns(self):
+        chat_id = 'd' * 32
+        with self.connect() as database:
+            database.execute('INSERT INTO chats(id,title,created_at) VALUES(?,?,?)',
+                             (chat_id, 'Legacy chat', 'now'))
+            database.execute('INSERT INTO messages(chat_id,role,content,created_at) VALUES(?,?,?,?)',
+                             (chat_id, 'assistant', 'Legacy answer', 'now'))
+            database.execute('PRAGMA user_version=3')
+        initialize_database(self.connect)
+        self.assertEqual(self.repositories.chat_history(chat_id)[0]['content'], 'Legacy answer')
+        self.repositories.store_exchange(chat_id, 'General question', 'General answer', 'later', 'general')
+        modes = self.repositories.recent_messages_with_modes(chat_id, 3)
+        self.assertEqual(modes[0]['answer_mode'], 'general')
+        self.assertEqual(modes[1]['answer_mode'], 'general')
+        self.assertIsNone(modes[2]['answer_mode'])
+
     def test_knowledge_crud_preserves_repository_contract(self):
         created = self.repositories.save_knowledge(
             None, 'Synthetic policy', 'Synthetic category', 'Initial content', 'Synthetic source', 'now')

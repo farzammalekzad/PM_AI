@@ -20,6 +20,9 @@ class FakeRepository:
     def recent_messages(self, identifier, limit):
         return list(reversed(self.history[-limit:]))
 
+    def recent_messages_with_modes(self, identifier, limit):
+        return list(reversed(self.history[-limit:]))
+
     def create_chat_with_exchange(self, *values):
         self.new_exchanges.append(values)
 
@@ -249,6 +252,94 @@ class ChatServiceTests(unittest.TestCase):
         self.assertEqual(retrieved_questions, [(base['question'], 5), (explicit['question'], 5)])
         self.assertIn('حالت پاسخ: مستند', client.calls[0][1][0]['content'])
         self.assertIn('حالت پاسخ: مستند', client.calls[1][1][0]['content'])
+
+    def test_general_mode_isolates_retrieval_evidence_and_citation_events(self):
+        repository = FakeRepository()
+        client = FakeClient([{'message': {'content': 'General answer'}, 'done': True}])
+        calls = {'knowledge': 0, 'documents': 0}
+
+        def knowledge(question):
+            calls['knowledge'] += 1
+            return [{'id': 9, 'title': 'Synthetic policy', 'category': 'Synthetic',
+                     'source': '', 'content': 'Organization-only fact'}]
+
+        def documents(question, limit):
+            calls['documents'] += 1
+            return [{'document_id': 8, 'chunk_no': 1, 'name': 'private.txt',
+                     'content': 'Organization-only document'}]
+
+        service = ChatService(lambda: repository, lambda: client, knowledge, documents,
+                              PromptBuilder(), (4096, 8192))
+        session = service.start({'chat_id': None, 'question': 'Explain gravity',
+                                 'content': 'Explain gravity', 'model': 'gemma-synthetic',
+                                 'answer_mode': 'general', 'ctx': 4096})
+        events = list(session.events())
+        prompt = '\n'.join(message['content'] for message in client.calls[0][1])
+        self.assertEqual(calls, {'knowledge': 0, 'documents': 0})
+        self.assertNotIn('Organization-only fact', prompt)
+        self.assertNotIn('Organization-only document', prompt)
+        self.assertNotIn('دانش سازمانی بازیابی‌شده', prompt)
+        self.assertNotIn('[D8-C1]', prompt)
+        self.assertNotIn('source_ids', events[0])
+        self.assertNotIn('doc_source_details', events[0])
+        self.assertFalse(events[0]['mode_diagnostics']['organizational_retrieval_executed'])
+        self.assertFalse(events[0]['mode_diagnostics']['organizational_evidence_sent'])
+        self.assertFalse(any('cited_doc_sources' in event for event in events))
+        self.assertEqual(events[-1]['citation_integrity']['status'], 'not_required')
+
+    def test_grounded_and_hybrid_retrieve_and_send_distinct_prompts(self):
+        calls = {'knowledge': 0, 'documents': 0}
+
+        def knowledge(question):
+            calls['knowledge'] += 1
+            return []
+
+        def documents(question, limit):
+            calls['documents'] += 1
+            return [{'document_id': 8, 'chunk_no': 1, 'name': 'synthetic.txt',
+                     'content': 'Organization-only document'}]
+
+        request = {'chat_id': None, 'question': 'Synthetic question', 'content': 'Synthetic question',
+                   'model': 'gemma-synthetic', 'ctx': 4096}
+        grounded_client = FakeClient([{'message': {'content': 'Grounded [D8-C1]'}, 'done': True}])
+        grounded = ChatService(lambda: FakeRepository(), lambda: grounded_client, knowledge, documents,
+                               PromptBuilder(), (4096, 8192)).start(dict(request, answer_mode='grounded'))
+        grounded_events = list(grounded.events())
+        hybrid_client = FakeClient([{'message': {'content': 'Hybrid [D8-C1]'}, 'done': True}])
+        hybrid = ChatService(lambda: FakeRepository(), lambda: hybrid_client, knowledge, documents,
+                             PromptBuilder(), (4096, 8192)).start(dict(request, answer_mode='hybrid'))
+        hybrid_events = list(hybrid.events())
+        self.assertEqual(calls, {'knowledge': 2, 'documents': 2})
+        self.assertIn('Organization-only document', grounded_client.calls[0][1][0]['content'])
+        self.assertIn('حالت پاسخ: مستند', grounded_client.calls[0][1][0]['content'])
+        self.assertIn('حالت پاسخ: ترکیبی', hybrid_client.calls[0][1][0]['content'])
+        self.assertTrue(grounded_events[0]['mode_diagnostics']['organizational_evidence_sent'])
+        self.assertTrue(hybrid_events[0]['mode_diagnostics']['organizational_retrieval_executed'])
+        self.assertEqual(grounded_events[-1]['citation_integrity']['status'], 'cited')
+        self.assertEqual(hybrid_events[-1]['citation_integrity']['status'], 'cited')
+
+    def test_general_mode_excludes_grounded_and_legacy_history(self):
+        chat_id = 'b' * 32
+        repository = FakeRepository(True, [
+            {'role': 'user', 'content': 'Grounded question', 'answer_mode': 'grounded'},
+            {'role': 'assistant', 'content': 'Organization-only answer [D4-C1]', 'answer_mode': 'grounded'},
+            {'role': 'user', 'content': 'General question', 'answer_mode': 'general'},
+            {'role': 'assistant', 'content': 'General answer', 'answer_mode': 'general'},
+            {'role': 'assistant', 'content': 'Unknown legacy organizational answer', 'answer_mode': None},
+        ])
+        client = FakeClient([{'message': {'content': 'New general answer'}, 'done': True}])
+        service = ChatService(lambda: repository, lambda: client,
+                              lambda question: self.fail('General mode must not search knowledge'),
+                              lambda question, limit: self.fail('General mode must not retrieve documents'),
+                              PromptBuilder(), (4096, 8192))
+        session = service.start({'chat_id': chat_id, 'question': 'Continue generally',
+                                 'content': 'Continue generally', 'model': 'gemma-synthetic',
+                                 'answer_mode': 'general', 'ctx': 4096})
+        history = '\n'.join(message['content'] for message in client.calls[0][1][1:-1])
+        self.assertIn('General question', history)
+        self.assertIn('General answer', history)
+        self.assertNotIn('Organization-only answer', history)
+        self.assertNotIn('Unknown legacy organizational answer', history)
 
 
 if __name__ == '__main__':

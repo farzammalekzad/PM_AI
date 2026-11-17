@@ -65,6 +65,8 @@ class WebExtractionTests(unittest.TestCase):
         self.assertIn('cited_doc_sources', script.wfile.getvalue().decode('utf-8'))
         self.assertIn('citation_integrity', script.wfile.getvalue().decode('utf-8'))
         self.assertIn('renderCitationIntegrity', script.wfile.getvalue().decode('utf-8'))
+        self.assertIn('mode_diagnostics', script.wfile.getvalue().decode('utf-8'))
+        self.assertIn('organizational_retrieval_executed', script.wfile.getvalue().decode('utf-8'))
         self.assertIn('document-replace', script.wfile.getvalue().decode('utf-8'))
         self.assertIn('document-delete-confirmed', script.wfile.getvalue().decode('utf-8'))
         self.assertIn('replaceConfirm', body)

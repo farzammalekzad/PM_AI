@@ -138,6 +138,15 @@ class Repositories:
                 'SELECT role,content FROM messages WHERE chat_id=? ORDER BY id DESC LIMIT ?',
                 (identifier, limit)).fetchall()
 
+    def recent_messages_with_modes(self, identifier, limit):
+        """Return recent messages with optional additive mode metadata for isolation."""
+        with self.connect() as database:
+            return database.execute(
+                '''SELECT messages.role,messages.content,message_modes.answer_mode
+                   FROM messages LEFT JOIN message_modes ON message_modes.message_id=messages.id
+                   WHERE messages.chat_id=? ORDER BY messages.id DESC LIMIT ?''',
+                (identifier, limit)).fetchall()
+
     def chat_exists(self, identifier):
         with self.connect() as database:
             return database.execute('SELECT 1 FROM chats WHERE id=?', (identifier,)).fetchone() is not None
@@ -147,19 +156,25 @@ class Repositories:
             database.execute('INSERT INTO chats(id,title,created_at) VALUES (?,?,?)',
                              (identifier, title, timestamp))
 
-    def store_exchange(self, chat_identifier, user_content, assistant_content, timestamp):
+    def store_exchange(self, chat_identifier, user_content, assistant_content, timestamp,
+                       answer_mode='general'):
         with self.connect() as database:
-            database.execute('INSERT INTO messages(chat_id,role,content,created_at) VALUES(?,?,?,?)',
-                             (chat_identifier, 'user', user_content, timestamp))
-            database.execute('INSERT INTO messages(chat_id,role,content,created_at) VALUES(?,?,?,?)',
-                             (chat_identifier, 'assistant', assistant_content, timestamp))
+            user = database.execute('INSERT INTO messages(chat_id,role,content,created_at) VALUES(?,?,?,?)',
+                                    (chat_identifier, 'user', user_content, timestamp))
+            assistant = database.execute('INSERT INTO messages(chat_id,role,content,created_at) VALUES(?,?,?,?)',
+                                         (chat_identifier, 'assistant', assistant_content, timestamp))
+            database.executemany('INSERT INTO message_modes(message_id,answer_mode) VALUES(?,?)',
+                                 ((user.lastrowid, answer_mode), (assistant.lastrowid, answer_mode)))
 
-    def create_chat_with_exchange(self, chat_identifier, title, user_content, assistant_content, timestamp):
+    def create_chat_with_exchange(self, chat_identifier, title, user_content, assistant_content, timestamp,
+                                  answer_mode='general'):
         """Persist a successful first turn atomically to avoid empty new chats."""
         with self.connect() as database:
             database.execute('INSERT INTO chats(id,title,created_at) VALUES (?,?,?)',
                              (chat_identifier, title, timestamp))
-            database.execute('INSERT INTO messages(chat_id,role,content,created_at) VALUES(?,?,?,?)',
-                             (chat_identifier, 'user', user_content, timestamp))
-            database.execute('INSERT INTO messages(chat_id,role,content,created_at) VALUES(?,?,?,?)',
-                             (chat_identifier, 'assistant', assistant_content, timestamp))
+            user = database.execute('INSERT INTO messages(chat_id,role,content,created_at) VALUES(?,?,?,?)',
+                                    (chat_identifier, 'user', user_content, timestamp))
+            assistant = database.execute('INSERT INTO messages(chat_id,role,content,created_at) VALUES(?,?,?,?)',
+                                         (chat_identifier, 'assistant', assistant_content, timestamp))
+            database.executemany('INSERT INTO message_modes(message_id,answer_mode) VALUES(?,?)',
+                                 ((user.lastrowid, answer_mode), (assistant.lastrowid, answer_mode)))

@@ -6,7 +6,7 @@ Document retrieval, evidence construction, and `D#-C#` source metadata already r
 
 ## Additive answer modes
 
-`answer_mode` is an additive `/api/chat-stream` request field. The Persian interface explicitly sends and defaults to `grounded`. To preserve existing programmatic API clients that predate the field, an omitted value remains `general`; clients that need document grounding must send `grounded` explicitly.
+`answer_mode` is an additive `/api/chat-stream` request field. The Persian interface explicitly sends and defaults to `grounded`. Task 16G later isolated General mode and retained the pre-mode retrieval behavior for callers that omit the field; clients that require a specific mode must send it explicitly.
 
 - `grounded`: retrieved company documents are the authoritative evidence for document claims. The prompt requires exact retrieved `D#-C#` identifiers. If no document is retrieved for a substantive question, the chat service returns a deterministic Persian evidence-insufficient abstention without calling the model. Exact short greetings remain ordinary conversations.
 - `hybrid`: document-backed statements require document identifiers; general knowledge must be described as general rather than presented as company-document evidence.

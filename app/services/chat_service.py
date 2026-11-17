@@ -4,7 +4,7 @@ import uuid
 from dataclasses import asdict, dataclass
 from datetime import datetime
 
-from app.services.answer_modes import (GROUNDED, GROUNDED_NO_EVIDENCE,
+from app.services.answer_modes import (GENERAL, GROUNDED, GROUNDED_NO_EVIDENCE, HYBRID,
                                        is_simple_social_turn, normalize_answer_mode)
 from app.services.citation_service import (citation_integrity, cited_document_sources,
                                            knowledge_identifier, source_metadata)
@@ -25,14 +25,17 @@ class ChatSession:
     diagnostics: object
     retrieval_diagnostics: dict
     response_mode: str
+    mode_diagnostics: dict
 
     def events(self):
         """Yield source and content events, persisting only non-empty completed output."""
         source_event = {
             'chat_id': self.chat_id,
             'answer_mode': self.response_mode,
-            **source_metadata(self.facts, self.documents),
+            'mode_diagnostics': self.mode_diagnostics,
         }
+        if self.response_mode != GENERAL:
+            source_event.update(source_metadata(self.facts, self.documents))
         if self.retrieval_diagnostics is not None:
             source_event['retrieval_diagnostics'] = self.retrieval_diagnostics
         yield source_event
@@ -59,16 +62,18 @@ class ChatSession:
                 completed = True
         answer = ''.join(full)
         if completed and answer:
-            # Additive terminal event: only citations emitted by the model and retrieved this turn.
-            yield {'cited_doc_sources': cited_document_sources(answer, self.documents)}
+            # Additive terminal event: only organizational modes emit document citation sources.
+            if self.response_mode != GENERAL:
+                yield {'cited_doc_sources': cited_document_sources(answer, self.documents)}
             yield {'citation_integrity': citation_integrity(
                 answer, self.documents, self.response_mode)}
             timestamp = datetime.now().isoformat(timespec='seconds')
             if self.is_new_chat:
                 self.repository.create_chat_with_exchange(
-                    self.chat_id, self.title, self.content, answer, timestamp)
+                    self.chat_id, self.title, self.content, answer, timestamp, self.response_mode)
             else:
-                self.repository.store_exchange(self.chat_id, self.content, answer, timestamp)
+                self.repository.store_exchange(
+                    self.chat_id, self.content, answer, timestamp, self.response_mode)
 
 
 class ChatService:
@@ -91,23 +96,28 @@ class ChatService:
             raise ValueError('شناسه گفت‌وگو نامعتبر است')
         question = str(request.get('question', '')).strip()
         content = str(request.get('content', '')).strip()
-        # The Persian UI always sends its Grounded default. Preserve pre-mode API clients.
-        response_mode = normalize_answer_mode(request.get('answer_mode', 'general'))
+        # The Persian UI always sends its Grounded default. Preserve pre-mode API retrieval behavior.
+        response_mode = normalize_answer_mode(request.get('answer_mode', HYBRID))
         context_window = int(request.get('ctx', 8192))
         if (not model or not question or not content or
                 context_window not in self.allowed_context_windows or len(content) > 120000):
             raise ValueError('پارامترهای مدل یا پرسش نامعتبرند')
 
-        facts = self.search_knowledge(question)
-        document_result = self.retrieve_documents(question, limit=5)
-        if hasattr(document_result, 'records') and hasattr(document_result, 'diagnostics'):
-            documents = document_result.records
-            retrieval_diagnostics = asdict(document_result.diagnostics)
-            retrieval_diagnostics['selected_citation_identifiers'] = (
-                [knowledge_identifier(fact) for fact in facts] +
-                list(retrieval_diagnostics['selected_source_identifiers']))
+        retrieval_executed = response_mode != GENERAL
+        if retrieval_executed:
+            facts = self.search_knowledge(question)
+            document_result = self.retrieve_documents(question, limit=5)
+            if hasattr(document_result, 'records') and hasattr(document_result, 'diagnostics'):
+                documents = document_result.records
+                retrieval_diagnostics = asdict(document_result.diagnostics)
+                retrieval_diagnostics['selected_citation_identifiers'] = (
+                    [knowledge_identifier(fact) for fact in facts] +
+                    list(retrieval_diagnostics['selected_source_identifiers']))
+            else:
+                documents = document_result
+                retrieval_diagnostics = None
         else:
-            documents = document_result
+            facts, documents = [], []
             retrieval_diagnostics = None
         repository = self.repository_factory()
         is_new_chat = chat_id is None
@@ -117,11 +127,21 @@ class ChatService:
         else:
             if not repository.chat_exists(chat_id):
                 raise ValueError('گفت‌وگو یافت نشد')
-            rows = repository.recent_messages(chat_id, 16)
-            history = [{'role': row['role'], 'content': row['content']} for row in reversed(rows)]
+            if hasattr(repository, 'recent_messages_with_modes'):
+                rows = repository.recent_messages_with_modes(chat_id, 16)
+                history = self._history_for_mode(rows, response_mode)
+            else:
+                rows = repository.recent_messages(chat_id, 16)
+                history = [{'role': row['role'], 'content': row['content']} for row in reversed(rows)]
 
         prompt = self.prompt_builder.build(
             content, facts, documents, history, context_window, response_mode)
+        mode_diagnostics = {
+            'selected_answer_mode': response_mode,
+            'organizational_retrieval_executed': retrieval_executed,
+            'retrieved_organizational_sources': len(facts) + len(documents),
+            'organizational_evidence_sent': prompt.diagnostics.organizational_evidence_sent,
+        }
         if response_mode == GROUNDED and not documents and not is_simple_social_turn(question):
             upstream = iter(({'message': {'content': GROUNDED_NO_EVIDENCE}, 'done': True},))
         else:
@@ -138,4 +158,18 @@ class ChatService:
             diagnostics=prompt.diagnostics,
             retrieval_diagnostics=retrieval_diagnostics,
             response_mode=response_mode,
+            mode_diagnostics=mode_diagnostics,
         )
+
+    @staticmethod
+    def _history_for_mode(rows, response_mode):
+        """Keep unknown legacy assistant turns out of General prompts without rewriting history."""
+        history = []
+        for row in reversed(rows):
+            item = dict(row)
+            if response_mode == GENERAL:
+                message_mode = item.get('answer_mode')
+                if message_mode != GENERAL:
+                    continue
+            history.append({'role': item['role'], 'content': item['content']})
+        return history

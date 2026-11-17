@@ -1,6 +1,6 @@
 """Additive, idempotent SQLite schema initialization and migrations."""
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 
 INITIAL_SCHEMA = '''
 CREATE TABLE IF NOT EXISTS knowledge (
@@ -73,7 +73,15 @@ def migrate_v3(database):
             database.execute('ALTER TABLE doc_chunks ADD COLUMN %s %s' % (name, definition))
 
 
-MIGRATIONS = {1: migrate_v1, 2: migrate_v2, 3: migrate_v3}
+def migrate_v4(database):
+    """Record new message modes without changing historical message content."""
+    database.execute('''CREATE TABLE IF NOT EXISTS message_modes (
+        message_id INTEGER PRIMARY KEY REFERENCES messages(id) ON DELETE CASCADE,
+        answer_mode TEXT NOT NULL CHECK (answer_mode IN ('grounded','hybrid','general'))
+    )''')
+
+
+MIGRATIONS = {1: migrate_v1, 2: migrate_v2, 3: migrate_v3, 4: migrate_v4}
 
 
 def apply_migrations(database, log_event=None):
