@@ -1,6 +1,6 @@
 """Additive, idempotent SQLite schema initialization and migrations."""
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 INITIAL_SCHEMA = '''
 CREATE TABLE IF NOT EXISTS knowledge (
@@ -60,7 +60,20 @@ def migrate_v2(database):
         database.execute("UPDATE documents SET updated_at=created_at WHERE updated_at='' ")
 
 
-MIGRATIONS = {1: migrate_v1, 2: migrate_v2}
+def migrate_v3(database):
+    """Add optional chunk provenance; legacy chunks remain explicitly unknown."""
+    columns = {row[1] for row in database.execute('PRAGMA table_info(doc_chunks)').fetchall()}
+    additions = (
+        ('page_start', 'INTEGER'), ('page_end', 'INTEGER'),
+        ('heading', "TEXT NOT NULL DEFAULT ''"), ('worksheet', "TEXT NOT NULL DEFAULT ''"),
+        ('row_start', 'INTEGER'), ('row_end', 'INTEGER'),
+    )
+    for name, definition in additions:
+        if name not in columns:
+            database.execute('ALTER TABLE doc_chunks ADD COLUMN %s %s' % (name, definition))
+
+
+MIGRATIONS = {1: migrate_v1, 2: migrate_v2, 3: migrate_v3}
 
 
 def apply_migrations(database, log_event=None):

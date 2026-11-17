@@ -26,6 +26,40 @@ def chunk_document(text, chunk_chars=1300, overlap=180):
     return [chunk for chunk in chunks if chunk]
 
 
+def chunk_document_with_provenance(segments, chunk_chars=1300, overlap=180):
+    """Keep established chunk text while attaching intersecting reliable source ranges."""
+    text = '\n'.join(segment['text'] for segment in segments)
+    chunks = chunk_document(text, chunk_chars, overlap)
+    cursor = 0
+    positioned = []
+    for segment in segments:
+        start = cursor
+        end = start + len(segment['text'])
+        positioned.append((start, end, segment))
+        cursor = end + 1
+    output = []
+    search_from = 0
+    for chunk in chunks:
+        start = text.find(chunk, search_from)
+        end = start + len(chunk)
+        search_from = max(start + 1, end - overlap)
+        related = [segment for left, right, segment in positioned if left < end and right > start]
+        metadata = {}
+        pages = [item[key] for item in related for key in ('page_start', 'page_end') if item.get(key)]
+        rows = [item[key] for item in related for key in ('row_start', 'row_end') if item.get(key)]
+        worksheets = {item.get('worksheet', '') for item in related if item.get('worksheet')}
+        headings = {item.get('heading', '') for item in related if item.get('heading')}
+        if pages:
+            metadata['page_start'], metadata['page_end'] = min(pages), max(pages)
+        if rows and len(worksheets) == 1:
+            metadata['worksheet'] = next(iter(worksheets))
+            metadata['row_start'], metadata['row_end'] = min(rows), max(rows)
+        if len(headings) == 1:
+            metadata['heading'] = next(iter(headings))
+        output.append((chunk, metadata))
+    return output
+
+
 class DocumentIngestionService:
     """Prepare all derived data before one repository transaction persists it."""
 
@@ -73,18 +107,19 @@ class DocumentIngestionService:
         name = self._safe_name(name)
         if len(raw) > self.max_document_bytes:
             raise ValueError('حجم سند بیشتر از ۸ مگابایت است')
-        text = self.extractor.extract(name, raw)
+        segments = self.extractor.extract_with_provenance(name, raw)
+        text = '\n'.join(segment['text'] for segment in segments)
         if not text.strip():
             raise ValueError('متنی در سند یافت نشد؛ PDF اسکن‌شده به OCR نیاز دارد')
         if len(text) > self.max_document_chars:
             raise ValueError('متن سند بیش از حد بزرگ است؛ آن را به چند فایل تقسیم کنید')
-        chunks = chunk_document(text)
+        chunks = chunk_document_with_provenance(segments)
         if len(chunks) > self.max_chunks:
             raise ValueError('تعداد بخش‌های سند بیش از حد زیاد است')
-        vectors = [self.embedder(chunk, model) for chunk in chunks] if model else [None] * len(chunks)
+        vectors = [self.embedder(chunk, model) for chunk, _ in chunks] if model else [None] * len(chunks)
         return {'name': name, 'digest': hashlib.sha256(raw).hexdigest(), 'char_count': len(text),
-                'chunks': [(index + 1, chunk, json.dumps(vector) if vector else '')
-                           for index, (chunk, vector) in enumerate(zip(chunks, vectors))]}
+                'chunks': [(index + 1, chunk, json.dumps(vector) if vector else '', provenance)
+                           for index, ((chunk, provenance), vector) in enumerate(zip(chunks, vectors))]}
 
     @staticmethod
     def _safe_name(name):

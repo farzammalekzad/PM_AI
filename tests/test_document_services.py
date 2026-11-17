@@ -13,7 +13,7 @@ from app.db.connection import connect
 from app.db.migrations import initialize_database
 from app.db.repositories import Repositories
 from app.services.document_extractor import DocumentExtractor
-from app.services.document_ingestion import DocumentIngestionService, chunk_document
+from app.services.document_ingestion import DocumentIngestionService, chunk_document, chunk_document_with_provenance
 
 
 class DocumentServiceTests(unittest.TestCase):
@@ -68,6 +68,31 @@ class DocumentServiceTests(unittest.TestCase):
             self.extractor.extract('broken.docx', b'not a zip')
         with self.assertRaisesRegex(ValueError, 'فشرده'):
             DocumentExtractor(1, 10).extract('large.docx', docx.getvalue())
+
+    def test_pdf_docx_xlsx_provenance_and_cross_page_ranges(self):
+        class Page:
+            def __init__(self, value): self.value = value
+            def extract_text(self): return self.value
+        class Reader:
+            def __init__(self, stream): self.pages = [Page('صفحه اول'), Page('صفحه دوم')]
+        with mock.patch.dict(sys.modules, {'pypdf': types.SimpleNamespace(PdfReader=Reader)}):
+            segments = self.extractor.extract_with_provenance('sample.pdf', b'%PDF synthetic')
+        self.assertEqual([(item['page_start'], item['page_end']) for item in segments], [(1, 1), (2, 2)])
+        spanning = chunk_document_with_provenance(segments, chunk_chars=30, overlap=0)
+        self.assertEqual(spanning[0][1]['page_start'], 1)
+        self.assertEqual(spanning[0][1]['page_end'], 2)
+
+        docx = io.BytesIO()
+        with zipfile.ZipFile(docx, 'w') as archive:
+            archive.writestr('word/document.xml', '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:pPr><w:pStyle w:val="Heading1"/></w:pPr><w:r><w:t>عنوان</w:t></w:r></w:p><w:p><w:r><w:t>متن</w:t></w:r></w:p></w:body></w:document>')
+        self.assertEqual(self.extractor.extract_with_provenance('sample.docx', docx.getvalue())[1]['heading'], 'عنوان')
+
+        xlsx = io.BytesIO()
+        with zipfile.ZipFile(xlsx, 'w') as archive:
+            archive.writestr('xl/workbook.xml', '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheets><sheet name="بودجه" sheetId="1"/></sheets></workbook>')
+            archive.writestr('xl/worksheets/sheet1.xml', '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData><row r="7"><c r="A7" t="inlineStr"><is><t>مبلغ</t></is></c></row></sheetData></worksheet>')
+        item = self.extractor.extract_with_provenance('sample.xlsx', xlsx.getvalue())[0]
+        self.assertEqual((item['worksheet'], item['row_start'], item['row_end']), ('بودجه', 7, 7))
 
     def test_ingestion_duplicate_empty_embedding_failure_and_atomic_rollback(self):
         result = self.ingestion().ingest('policy.txt', 'سند ساختگی'.encode(), '')

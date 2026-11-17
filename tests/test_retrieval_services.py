@@ -2,7 +2,7 @@
 import json
 import unittest
 
-from app.services.citation_service import evidence_items, source_metadata
+from app.services.citation_service import evidence_items, source_location, source_metadata
 from app.services.retrieval_service import RetrievalService, cosine_similarity
 from app.services.retrieval_service import normalize_persian, persian_tokens, tokenize_persian
 
@@ -102,13 +102,18 @@ class RetrievalServiceTests(unittest.TestCase):
     def test_citation_evidence_and_metadata_ordering(self):
         facts = [{'id': 4, 'title': 'سیاست', 'category': 'منابع انسانی',
                   'source': 'مصوبه', 'content': 'متن دانش'}]
-        documents = [{'document_id': 8, 'chunk_no': 3, 'name': 'policy.txt', 'content': 'متن سند'}]
+        documents = [{'document_id': 8, 'chunk_no': 3, 'name': 'policy.txt', 'content': 'متن سند',
+                      'page_start': 2, 'page_end': 3}]
         items = evidence_items(facts, documents)
         self.assertEqual([identifier for identifier, _ in items], ['K4', 'D8-C3'])
         self.assertIn('[K4]', items[0][1])
         self.assertIn('[D8-C3]', items[1][1])
-        self.assertEqual(source_metadata(facts, documents),
-                         {'source_ids': [4], 'doc_sources': ['D8-C3 (policy.txt)']})
+        self.assertIn('صفحه 2 تا 3', items[1][1])
+        metadata = source_metadata(facts, documents)
+        self.assertEqual(metadata['source_ids'], [4])
+        self.assertEqual(metadata['doc_sources'], ['D8-C3 (policy.txt)'])
+        self.assertEqual(metadata['doc_source_details'][0]['location'], 'صفحه 2 تا 3')
+        self.assertEqual(source_location({'document_id': 1, 'chunk_no': 1}), '')
 
 
 if __name__ == '__main__':

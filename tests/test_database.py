@@ -41,6 +41,8 @@ class DatabaseLayerTests(unittest.TestCase):
         with self.connect() as database:
             columns = {row['name'] for row in database.execute('PRAGMA table_info(documents)').fetchall()}
             self.assertTrue({'status', 'updated_at'} <= columns)
+            chunk_columns = {row['name'] for row in database.execute('PRAGMA table_info(doc_chunks)').fetchall()}
+            self.assertTrue({'page_start', 'page_end', 'heading', 'worksheet', 'row_start', 'row_end'} <= chunk_columns)
             self.assertEqual(database.execute('PRAGMA user_version').fetchone()[0], SCHEMA_VERSION)
 
     def test_knowledge_crud_preserves_repository_contract(self):
@@ -65,6 +67,17 @@ class DatabaseLayerTests(unittest.TestCase):
         self.repositories.store_exchange(chat_id, 'Synthetic question', 'Synthetic answer', 'now')
         self.assertEqual([row['role'] for row in self.repositories.chat_history(chat_id)],
                          ['user', 'assistant'])
+
+    def test_replacement_replaces_chunk_provenance_without_stale_locations(self):
+        identifier = self.repositories.create_document_with_chunks(
+            'synthetic.pdf', 'c' * 64, 10,
+            [(1, 'Old synthetic page', '', {'page_start': 1, 'page_end': 1})], '', 'now')
+        self.repositories.replace_document_with_chunks(
+            identifier, 'replacement.pdf', 'd' * 64, 10,
+            [(1, 'New synthetic page', '', {'page_start': 4, 'page_end': 4})], '', 'later')
+        row = self.repositories.document_records()[0]
+        self.assertEqual((row['content'], row['page_start'], row['page_end']),
+                         ('New synthetic page', 4, 4))
 
     def test_backup_and_integrity_status(self):
         self.repositories.create_document_with_chunks(

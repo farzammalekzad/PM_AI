@@ -51,14 +51,15 @@ class Repositories:
                 'VALUES (?,?,?,?,?,?,?,?)',
                 (name, digest, char_count, len(chunks), embedding_model, timestamp, 'active', timestamp)).lastrowid
             database.executemany(
-                'INSERT INTO doc_chunks(document_id,chunk_no,content,vector) VALUES(?,?,?,?)',
-                [(identifier, chunk_no, content, vector)
-                 for chunk_no, content, vector in chunks])
+                '''INSERT INTO doc_chunks(document_id,chunk_no,content,vector,page_start,page_end,heading,
+                worksheet,row_start,row_end) VALUES(?,?,?,?,?,?,?,?,?,?)''',
+                [self._chunk_insert_values(identifier, chunk) for chunk in chunks])
             return identifier
 
     def document_records(self):
         with self.connect() as database:
-            return database.execute('''SELECT c.document_id,c.chunk_no,c.content,c.vector,d.name,d.embed_model
+            return database.execute('''SELECT c.document_id,c.chunk_no,c.content,c.vector,c.page_start,c.page_end,
+                c.heading,c.worksheet,c.row_start,c.row_end,d.name,d.embed_model
                 FROM doc_chunks c JOIN documents d ON d.id=c.document_id''').fetchall()
 
     def index_records(self):
@@ -101,9 +102,19 @@ class Repositories:
                              (name, digest, char_count, len(chunks), embedding_model, timestamp,
                               int(identifier)))
             database.executemany(
-                'INSERT INTO doc_chunks(document_id,chunk_no,content,vector) VALUES(?,?,?,?)',
-                [(int(identifier), chunk_no, content, vector) for chunk_no, content, vector in chunks])
+                '''INSERT INTO doc_chunks(document_id,chunk_no,content,vector,page_start,page_end,heading,
+                worksheet,row_start,row_end) VALUES(?,?,?,?,?,?,?,?,?,?)''',
+                [self._chunk_insert_values(int(identifier), chunk) for chunk in chunks])
             return int(identifier)
+
+    @staticmethod
+    def _chunk_insert_values(document_id, chunk):
+        chunk_no, content, vector = chunk[:3]
+        provenance = chunk[3] if len(chunk) > 3 else {}
+        return (document_id, chunk_no, content, vector, provenance.get('page_start'),
+                provenance.get('page_end'), provenance.get('heading', ''),
+                provenance.get('worksheet', ''), provenance.get('row_start'),
+                provenance.get('row_end'))
 
     def delete_document(self, identifier):
         with self.connect() as database:

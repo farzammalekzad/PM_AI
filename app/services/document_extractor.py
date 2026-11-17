@@ -14,15 +14,19 @@ class DocumentExtractor:
         self.max_archive_uncompressed_bytes = max_archive_uncompressed_bytes
 
     def extract(self, name, content):
+        return '\n'.join(segment['text'] for segment in self.extract_with_provenance(name, content))
+
+    def extract_with_provenance(self, name, content):
+        """Return text segments with only source locations reliably available offline."""
         extension = Path(name).suffix.lower()
         if extension in ('.txt', '.md', '.csv', '.json', '.log'):
-            return self._text(content)
+            return [{'text': self._text(content)}]
         if extension == '.docx':
-            return self._docx(content)
+            return self._docx_segments(content)
         if extension == '.xlsx':
-            return self._xlsx(content)
+            return self._xlsx_segments(content)
         if extension == '.pdf':
-            return self._pdf(content)
+            return self._pdf_segments(content)
         raise ValueError('فرمت فایل پشتیبانی نمی‌شود')
 
     def validate_archive(self, archive):
@@ -51,7 +55,7 @@ class DocumentExtractor:
             pass
         return content.decode('utf-8', errors='replace')
 
-    def _docx(self, content):
+    def _docx_segments(self, content):
         with zipfile.ZipFile(io.BytesIO(content)) as archive:
             self.validate_archive(archive)
             if ('word/document.xml' not in archive.namelist() or
@@ -59,11 +63,22 @@ class DocumentExtractor:
                 raise ValueError('سند Word بیش از حد بزرگ است')
             root = element_tree.fromstring(archive.read('word/document.xml'))
         namespace = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
-        return '\n'.join(
-            ''.join(text.text or '' for text in paragraph.iter(namespace + 't'))
-            for paragraph in root.iter(namespace + 'p'))
+        heading = ''
+        segments = []
+        for paragraph in root.iter(namespace + 'p'):
+            text = ''.join(item.text or '' for item in paragraph.iter(namespace + 't'))
+            style = paragraph.find('.//' + namespace + 'pStyle')
+            style_value = style.get(namespace + 'val', '') if style is not None else ''
+            if style_value.lower().startswith('heading') and text.strip():
+                heading = text.strip()
+            if text:
+                item = {'text': text}
+                if heading:
+                    item['heading'] = heading
+                segments.append(item)
+        return segments
 
-    def _xlsx(self, content):
+    def _xlsx_segments(self, content):
         namespace = '{http://schemas.openxmlformats.org/spreadsheetml/2006/main}'
         with zipfile.ZipFile(io.BytesIO(content)) as archive:
             self.validate_archive(archive)
@@ -74,14 +89,19 @@ class DocumentExtractor:
                 root = element_tree.fromstring(archive.read('xl/sharedStrings.xml'))
                 shared = [''.join(text.text or '' for text in item.iter(namespace + 't'))
                           for item in root.iter(namespace + 'si')]
-            lines = []
+            sheet_titles = {}
+            if 'xl/workbook.xml' in archive.namelist():
+                workbook = element_tree.fromstring(archive.read('xl/workbook.xml'))
+                for index, sheet in enumerate(workbook.iter(namespace + 'sheet'), 1):
+                    sheet_titles[index] = sheet.get('name', 'Sheet' + str(index))
+            segments = []
             sheet_names = sorted(name for name in archive.namelist()
                                  if re.fullmatch(r'xl/worksheets/sheet\d+\.xml', name))
             for sheet_name in sheet_names:
                 if archive.getinfo(sheet_name).file_size > 20_000_000:
                     raise ValueError('برگه Excel بیش از حد بزرگ است')
                 root = element_tree.fromstring(archive.read(sheet_name))
-                lines.append('[' + sheet_name + ']')
+                worksheet = sheet_titles.get(int(re.search(r'(\d+)', sheet_name).group(1)), sheet_name)
                 for row in root.iter(namespace + 'row'):
                     cells = []
                     for cell in row.iter(namespace + 'c'):
@@ -94,13 +114,17 @@ class DocumentExtractor:
                         if value:
                             cells.append(cell.get('r', '') + '=' + value)
                     if cells:
-                        lines.append(' | '.join(cells))
-            return '\n'.join(lines)
+                        number = int(row.get('r', '0') or 0) or None
+                        segments.append({'text': '[' + worksheet + '] ' + ' | '.join(cells),
+                                         'worksheet': worksheet, 'row_start': number, 'row_end': number})
+            return segments
 
     @staticmethod
-    def _pdf(content):
+    def _pdf_segments(content):
         try:
             from pypdf import PdfReader
         except ImportError as error:
             raise ValueError('برای PDF متنی کتابخانه pypdf را آفلاین نصب کنید') from error
-        return '\n'.join(page.extract_text() or '' for page in PdfReader(io.BytesIO(content)).pages)
+        return [{'text': page.extract_text() or '', 'page_start': number, 'page_end': number}
+                for number, page in enumerate(PdfReader(io.BytesIO(content)).pages, 1)
+                if page.extract_text()]
