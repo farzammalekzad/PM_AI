@@ -1,6 +1,8 @@
 """Shared citation identifiers and evidence formatting for chat retrieval."""
 import re
 
+from app.services.answer_modes import GENERAL, GROUNDED
+
 
 DOCUMENT_CITATION = re.compile(r'\[(D\d+-C\d+)\]')
 
@@ -73,3 +75,21 @@ def cited_document_sources(answer, documents):
         if identifier in by_identifier and identifier not in identifiers:
             identifiers.append(identifier)
     return [by_identifier[identifier] for identifier in identifiers]
+
+
+def citation_integrity(answer, documents, response_mode):
+    """Describe citation membership without claiming factual correctness."""
+    cited = cited_document_sources(answer, documents)
+    if response_mode == GROUNDED:
+        status = 'cited' if cited else ('insufficient_evidence' if not documents else 'missing_citation')
+        required = True
+    elif response_mode == GENERAL:
+        status, required = 'not_required', False
+    else:
+        status, required = ('cited' if cited else 'not_cited'), False
+    return {
+        'mode': response_mode,
+        'status': status,
+        'citation_required': required,
+        'valid_document_citation_count': len(cited),
+    }

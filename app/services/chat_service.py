@@ -4,7 +4,10 @@ import uuid
 from dataclasses import asdict, dataclass
 from datetime import datetime
 
-from app.services.citation_service import cited_document_sources, knowledge_identifier, source_metadata
+from app.services.answer_modes import (GROUNDED, GROUNDED_NO_EVIDENCE,
+                                       is_simple_social_turn, normalize_answer_mode)
+from app.services.citation_service import (citation_integrity, cited_document_sources,
+                                           knowledge_identifier, source_metadata)
 
 
 @dataclass
@@ -21,11 +24,13 @@ class ChatSession:
     repository: object
     diagnostics: object
     retrieval_diagnostics: dict
+    response_mode: str
 
     def events(self):
         """Yield source and content events, persisting only non-empty completed output."""
         source_event = {
             'chat_id': self.chat_id,
+            'answer_mode': self.response_mode,
             **source_metadata(self.facts, self.documents),
         }
         if self.retrieval_diagnostics is not None:
@@ -56,6 +61,8 @@ class ChatSession:
         if completed and answer:
             # Additive terminal event: only citations emitted by the model and retrieved this turn.
             yield {'cited_doc_sources': cited_document_sources(answer, self.documents)}
+            yield {'citation_integrity': citation_integrity(
+                answer, self.documents, self.response_mode)}
             timestamp = datetime.now().isoformat(timespec='seconds')
             if self.is_new_chat:
                 self.repository.create_chat_with_exchange(
@@ -84,6 +91,8 @@ class ChatService:
             raise ValueError('شناسه گفت‌وگو نامعتبر است')
         question = str(request.get('question', '')).strip()
         content = str(request.get('content', '')).strip()
+        # The Persian UI always sends its Grounded default. Preserve pre-mode API clients.
+        response_mode = normalize_answer_mode(request.get('answer_mode', 'general'))
         context_window = int(request.get('ctx', 8192))
         if (not model or not question or not content or
                 context_window not in self.allowed_context_windows or len(content) > 120000):
@@ -111,8 +120,12 @@ class ChatService:
             rows = repository.recent_messages(chat_id, 16)
             history = [{'role': row['role'], 'content': row['content']} for row in reversed(rows)]
 
-        prompt = self.prompt_builder.build(content, facts, documents, history, context_window)
-        upstream = self.ollama_client_factory().stream_chat(model, prompt.messages, context_window)
+        prompt = self.prompt_builder.build(
+            content, facts, documents, history, context_window, response_mode)
+        if response_mode == GROUNDED and not documents and not is_simple_social_turn(question):
+            upstream = iter(({'message': {'content': GROUNDED_NO_EVIDENCE}, 'done': True},))
+        else:
+            upstream = self.ollama_client_factory().stream_chat(model, prompt.messages, context_window)
         return ChatSession(
             chat_id=chat_id,
             is_new_chat=is_new_chat,
@@ -124,4 +137,5 @@ class ChatService:
             repository=repository,
             diagnostics=prompt.diagnostics,
             retrieval_diagnostics=retrieval_diagnostics,
+            response_mode=response_mode,
         )

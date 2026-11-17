@@ -2,7 +2,8 @@
 import json
 import unittest
 
-from app.services.citation_service import cited_document_sources, evidence_items, source_location, source_metadata
+from app.services.citation_service import (citation_integrity, cited_document_sources,
+                                           evidence_items, source_location, source_metadata)
 from app.services.retrieval_service import RetrievalService, cosine_similarity
 from app.services.retrieval_service import normalize_persian, persian_tokens, tokenize_persian
 
@@ -129,6 +130,17 @@ class RetrievalServiceTests(unittest.TestCase):
         self.assertEqual(sources[0]['location'], 'صفحه 5')
         self.assertEqual(sources[1]['location'], 'کاربرگ بودجه، ردیف 7 تا 9')
         self.assertEqual(cited_document_sources('ارجاع قدیمی [D6-C1]', documents)[0]['location'], '')
+
+    def test_citation_integrity_keeps_retrieved_and_actually_cited_sources_distinct(self):
+        documents = [{'document_id': 4, 'chunk_no': 1, 'name': 'synthetic.pdf'}]
+        cited = citation_integrity('پاسخ مستند [D4-C1]', documents, 'grounded')
+        missing = citation_integrity('پاسخ بدون استناد [D9-C9]', documents, 'grounded')
+        absent = citation_integrity('پاسخ بدون مدرک', [], 'grounded')
+        self.assertEqual(cited['status'], 'cited')
+        self.assertEqual(cited['valid_document_citation_count'], 1)
+        self.assertEqual(missing['status'], 'missing_citation')
+        self.assertEqual(missing['valid_document_citation_count'], 0)
+        self.assertEqual(absent['status'], 'insufficient_evidence')
 
 
 if __name__ == '__main__':
