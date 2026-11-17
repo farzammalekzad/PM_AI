@@ -3,6 +3,8 @@ import importlib.util
 import io
 import base64
 import json
+import shutil
+import subprocess
 import tempfile
 import unittest
 from email.message import Message
@@ -83,6 +85,40 @@ class WebExtractionTests(unittest.TestCase):
         self.assertEqual(regular.response_headers['Content-Type'], 'font/woff2')
         self.assertEqual(bold.response_headers['Content-Type'], 'font/woff2')
         self.assertGreater(len(regular.wfile.getvalue()), 1000)
+
+    def test_markdown_rendering_uses_safe_dom_and_rtl_citation_styles(self):
+        script = self._get('/static/app.js')
+        javascript = script.wfile.getvalue().decode('utf-8')
+        self.assertIn('function renderMarkdown', javascript)
+        self.assertIn('function appendInlineMarkdown', javascript)
+        self.assertIn("document.createElement('pre')", javascript)
+        self.assertIn("element.className='citation'", javascript)
+        self.assertIn("identifier.dir='ltr'", javascript)
+        self.assertIn('bubble.textContent=full', javascript)
+        self.assertIn('renderMarkdown(bubble,full)', javascript)
+        self.assertIn("thinkBox.querySelector('pre').textContent=thinking", javascript)
+        self.assertNotIn('innerHTML', javascript)
+
+        styles = self._get('/static/styles.css')
+        css = styles.wfile.getvalue().decode('utf-8')
+        self.assertIn('.assistant-markdown', css)
+        self.assertIn('.assistant-markdown pre', css)
+        self.assertIn('.citation{display:inline-block;direction:ltr;unicode-bidi:isolate;white-space:nowrap', css)
+        self.assertIn('.cited-sources', css)
+        self.assertIn('font-family:"Vazir"', css)
+        self.assertIn('ui-monospace', css)
+
+    @unittest.skipUnless(shutil.which('node'), 'Node.js is required for the browser-renderer contract test')
+    def test_markdown_renderer_contract(self):
+        """Exercise the actual local JavaScript renderer with synthetic untrusted content."""
+        result = subprocess.run(
+            ['node', str(ROOT / 'tests' / 'markdown_renderer_test.js')],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
 
     def test_static_paths_are_allowlisted_and_cannot_traverse(self):
         traversal = self._get('/static/../templates/index.html')
