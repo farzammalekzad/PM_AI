@@ -1,6 +1,6 @@
 """Additive, idempotent SQLite schema initialization and migrations."""
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 INITIAL_SCHEMA = '''
 CREATE TABLE IF NOT EXISTS knowledge (
@@ -50,7 +50,17 @@ def migrate_v1(database):
     database.execute('CREATE INDEX IF NOT EXISTS idx_doc_chunks_document ON doc_chunks(document_id)')
 
 
-MIGRATIONS = {1: migrate_v1}
+def migrate_v2(database):
+    """Add lifecycle metadata without rewriting documents, chunks, or vectors."""
+    columns = {row[1] for row in database.execute('PRAGMA table_info(documents)').fetchall()}
+    if 'status' not in columns:
+        database.execute("ALTER TABLE documents ADD COLUMN status TEXT NOT NULL DEFAULT 'active'")
+    if 'updated_at' not in columns:
+        database.execute("ALTER TABLE documents ADD COLUMN updated_at TEXT NOT NULL DEFAULT ''")
+        database.execute("UPDATE documents SET updated_at=created_at WHERE updated_at='' ")
+
+
+MIGRATIONS = {1: migrate_v1, 2: migrate_v2}
 
 
 def apply_migrations(database, log_event=None):

@@ -15,7 +15,8 @@ from app.web.responses import json_response, send_bytes
 STATIC_TYPES = {'styles.css': 'text/css; charset=utf-8', 'app.js': 'application/javascript; charset=utf-8'}
 POST_PATHS = frozenset({
     '/api/knowledge-save', '/api/knowledge-delete', '/api/chat-stream', '/api/extract',
-    '/api/document-add', '/api/document-delete',
+    '/api/document-add', '/api/document-delete', '/api/document-delete-confirmed',
+    '/api/document-metadata', '/api/document-replace',
 })
 PAGE_CSP = "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'"
 
@@ -93,7 +94,21 @@ def create_handler(dependencies, asset_root):
                     raw = base64.b64decode(value['data'], validate=True)
                     self.json_response(dependencies.ingest_document(str(value.get('name', '')), raw,
                                                                     dependencies.embedding_model))
+                elif path == '/api/document-metadata':
+                    self.json_response(dependencies.update_document_metadata(
+                        value['id'], str(value.get('name', ''))))
+                elif path == '/api/document-replace':
+                    raw = base64.b64decode(value['data'], validate=True)
+                    self.json_response(dependencies.replace_document(
+                        value['id'], str(value.get('name', '')), raw,
+                        dependencies.embedding_model, value.get('confirmed')))
+                elif path == '/api/document-delete-confirmed':
+                    if value.get('confirmed') is not True:
+                        raise ValueError('حذف سند نیازمند تأیید صریح است')
+                    dependencies.repositories().delete_document(value['id'])
+                    self.json_response({'deleted': True})
                 elif path == '/api/document-delete':
+                    # Preserve the established endpoint for local API compatibility.
                     dependencies.repositories().delete_document(value['id'])
                     self.json_response({'deleted': True})
                 elif path == '/api/knowledge-save':

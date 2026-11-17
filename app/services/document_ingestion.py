@@ -39,34 +39,58 @@ class DocumentIngestionService:
         self.max_chunks = max_chunks
 
     def ingest(self, name, raw, model):
-        if not name or len(name) > 260:
-            raise ValueError('نام فایل نامعتبر است')
+        prepared = self._prepare(name, raw, model)
+        repository = self.repository_factory()
+        existing = repository.find_document_by_digest(prepared['digest'])
+        if existing:
+            raise ValueError('این فایل قبلاً وارد پایگاه دانش شده است (شناسه ' +
+                             str(existing['id']) + ')')
+        identifier = repository.create_document_with_chunks(
+            prepared['name'], prepared['digest'], prepared['char_count'], prepared['chunks'], model,
+            datetime.now().isoformat(timespec='seconds'))
+        return {'id': identifier, 'name': prepared['name'], 'chunks': len(prepared['chunks']),
+                'mode': 'semantic' if model else 'lexical'}
+
+    def update_metadata(self, identifier, name):
+        self.repository_factory().update_document_metadata(
+            identifier, self._safe_name(name), datetime.now().isoformat(timespec='seconds'))
+        return {'id': int(identifier), 'updated': True}
+
+    def replace(self, identifier, name, raw, model, confirmed):
+        if confirmed is not True:
+            raise ValueError('جایگزینی سند نیازمند تأیید صریح است')
+        repository = self.repository_factory()
+        if not repository.get_document(identifier):
+            raise ValueError('سند موردنظر یافت نشد')
+        prepared = self._prepare(name, raw, model)
+        stable_id = repository.replace_document_with_chunks(
+            identifier, prepared['name'], prepared['digest'], prepared['char_count'], prepared['chunks'], model,
+            datetime.now().isoformat(timespec='seconds'))
+        return {'id': stable_id, 'name': prepared['name'], 'chunks': len(prepared['chunks']),
+                'replaced': True, 'mode': 'semantic' if model else 'lexical'}
+
+    def _prepare(self, name, raw, model):
+        name = self._safe_name(name)
         if len(raw) > self.max_document_bytes:
             raise ValueError('حجم سند بیشتر از ۸ مگابایت است')
-        name = Path(name.replace('\\', '/')).name
-        if not name or name in ('.', '..'):
-            raise ValueError('نام فایل نامعتبر است')
         text = self.extractor.extract(name, raw)
         if not text.strip():
             raise ValueError('متنی در سند یافت نشد؛ PDF اسکن‌شده به OCR نیاز دارد')
         if len(text) > self.max_document_chars:
             raise ValueError('متن سند بیش از حد بزرگ است؛ آن را به چند فایل تقسیم کنید')
-        digest = hashlib.sha256(raw).hexdigest()
-        repository = self.repository_factory()
-        existing = repository.find_document_by_digest(digest)
-        if existing:
-            raise ValueError('این فایل قبلاً وارد پایگاه دانش شده است (شناسه ' +
-                             str(existing['id']) + ')')
         chunks = chunk_document(text)
         if len(chunks) > self.max_chunks:
             raise ValueError('تعداد بخش‌های سند بیش از حد زیاد است')
         vectors = [self.embedder(chunk, model) for chunk in chunks] if model else [None] * len(chunks)
-        stored_chunks = [
-            (index + 1, chunk, json.dumps(vector) if vector else '')
-            for index, (chunk, vector) in enumerate(zip(chunks, vectors))
-        ]
-        identifier = repository.create_document_with_chunks(
-            name, digest, len(text), stored_chunks, model,
-            datetime.now().isoformat(timespec='seconds'))
-        return {'id': identifier, 'name': name, 'chunks': len(chunks),
-                'mode': 'semantic' if model else 'lexical'}
+        return {'name': name, 'digest': hashlib.sha256(raw).hexdigest(), 'char_count': len(text),
+                'chunks': [(index + 1, chunk, json.dumps(vector) if vector else '')
+                           for index, (chunk, vector) in enumerate(zip(chunks, vectors))]}
+
+    @staticmethod
+    def _safe_name(name):
+        if not name or len(name) > 260:
+            raise ValueError('نام فایل نامعتبر است')
+        name = Path(name.replace('\\', '/')).name
+        if not name or name in ('.', '..'):
+            raise ValueError('نام فایل نامعتبر است')
+        return name

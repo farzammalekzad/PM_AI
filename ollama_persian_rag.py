@@ -195,6 +195,12 @@ def document_ingestion_service():
 def ingest_document(name, raw, model):
     return document_ingestion_service().ingest(name, raw, model)
 
+def update_document_metadata(identifier, name):
+    return document_ingestion_service().update_metadata(identifier, name)
+
+def replace_document(identifier, name, raw, model, confirmed):
+    return document_ingestion_service().replace(identifier, name, raw, model, confirmed)
+
 def search_documents(query,limit=5):
     return retrieval_service().retrieve_documents(query, limit).records
 
@@ -238,6 +244,14 @@ class _WebDependencies:
     @staticmethod
     def ingest_document(name, raw, model):
         return ingest_document(name, raw, model)
+
+    @staticmethod
+    def update_document_metadata(identifier, name):
+        return update_document_metadata(identifier, name)
+
+    @staticmethod
+    def replace_document(identifier, name, raw, model, confirmed):
+        return replace_document(identifier, name, raw, model, confirmed)
 
     @staticmethod
     def document_text(name, raw):

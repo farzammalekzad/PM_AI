@@ -38,11 +38,18 @@ class Repositories:
         with self.connect() as database:
             return database.execute('SELECT id FROM documents WHERE sha256=?', (digest,)).fetchone()
 
+    def get_document(self, identifier):
+        with self.connect() as database:
+            return database.execute(
+                'SELECT id,name,sha256,chars,chunks,embed_model,created_at,status,updated_at '
+                'FROM documents WHERE id=?', (int(identifier),)).fetchone()
+
     def create_document_with_chunks(self, name, digest, char_count, chunks, embedding_model, timestamp):
         with self.connect() as database:
             identifier = database.execute(
-                'INSERT INTO documents(name,sha256,chars,chunks,embed_model,created_at) VALUES (?,?,?,?,?,?)',
-                (name, digest, char_count, len(chunks), embedding_model, timestamp)).lastrowid
+                'INSERT INTO documents(name,sha256,chars,chunks,embed_model,created_at,status,updated_at) '
+                'VALUES (?,?,?,?,?,?,?,?)',
+                (name, digest, char_count, len(chunks), embedding_model, timestamp, 'active', timestamp)).lastrowid
             database.executemany(
                 'INSERT INTO doc_chunks(document_id,chunk_no,content,vector) VALUES(?,?,?,?)',
                 [(identifier, chunk_no, content, vector)
@@ -63,13 +70,46 @@ class Repositories:
 
     def list_documents(self):
         with self.connect() as database:
-            return database.execute(
-                'SELECT id,name,chars,chunks,embed_model,created_at FROM documents ORDER BY id DESC').fetchall()
+            return database.execute('''SELECT d.id,d.name,d.sha256,d.chars,d.chunks,d.embed_model,
+                d.created_at,d.status,d.updated_at,
+                COALESCE(SUM(CASE WHEN c.vector<>'' THEN 1 ELSE 0 END),0) AS vector_chunks
+                FROM documents d LEFT JOIN doc_chunks c ON c.document_id=d.id
+                GROUP BY d.id ORDER BY d.id DESC''').fetchall()
+
+    def update_document_metadata(self, identifier, name, timestamp):
+        with self.connect() as database:
+            cursor = database.execute('UPDATE documents SET name=?,updated_at=? WHERE id=?',
+                                      (name, timestamp, int(identifier)))
+            if cursor.rowcount != 1:
+                raise ValueError('سند موردنظر یافت نشد')
+
+    def replace_document_with_chunks(self, identifier, name, digest, char_count, chunks,
+                                     embedding_model, timestamp):
+        """Replace one selected document atomically while preserving its stable ID."""
+        with self.connect() as database:
+            target = database.execute('SELECT id FROM documents WHERE id=?', (int(identifier),)).fetchone()
+            if not target:
+                raise ValueError('سند موردنظر یافت نشد')
+            duplicate = database.execute('SELECT id FROM documents WHERE sha256=? AND id<>?',
+                                         (digest, int(identifier))).fetchone()
+            if duplicate:
+                raise ValueError('این فایل قبلاً وارد پایگاه دانش شده است (شناسه ' +
+                                 str(duplicate['id']) + ')')
+            database.execute('DELETE FROM doc_chunks WHERE document_id=?', (int(identifier),))
+            database.execute('''UPDATE documents SET name=?,sha256=?,chars=?,chunks=?,embed_model=?,
+                status='active',updated_at=? WHERE id=?''',
+                             (name, digest, char_count, len(chunks), embedding_model, timestamp,
+                              int(identifier)))
+            database.executemany(
+                'INSERT INTO doc_chunks(document_id,chunk_no,content,vector) VALUES(?,?,?,?)',
+                [(int(identifier), chunk_no, content, vector) for chunk_no, content, vector in chunks])
+            return int(identifier)
 
     def delete_document(self, identifier):
         with self.connect() as database:
-            database.execute('DELETE FROM doc_chunks WHERE document_id=?', (int(identifier),))
-            database.execute('DELETE FROM documents WHERE id=?', (int(identifier),))
+            cursor = database.execute('DELETE FROM documents WHERE id=?', (int(identifier),))
+            if cursor.rowcount != 1:
+                raise ValueError('سند موردنظر یافت نشد')
 
     def list_chats(self):
         with self.connect() as database:

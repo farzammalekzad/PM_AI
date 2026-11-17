@@ -86,6 +86,43 @@ class DocumentServiceTests(unittest.TestCase):
             self.assertEqual(database.execute('SELECT COUNT(*) FROM documents').fetchone()[0], 1)
             self.assertEqual(database.execute('SELECT COUNT(*) FROM doc_chunks').fetchone()[0], 1)
 
+    def test_listing_metadata_same_name_and_exact_duplicate_detection(self):
+        first = self.ingestion().ingest('shared-name.txt', b'first synthetic body', 'synthetic-model')
+        second = self.ingestion().ingest('shared-name.txt', b'second synthetic body', '')
+        self.assertNotEqual(first['id'], second['id'])
+        listed = {row['id']: row for row in self.repository.list_documents()}
+        self.assertEqual(listed[first['id']]['embed_model'], 'synthetic-model')
+        self.assertEqual(listed[first['id']]['vector_chunks'], listed[first['id']]['chunks'])
+        self.assertEqual(listed[second['id']]['vector_chunks'], 0)
+        self.assertEqual(listed[first['id']]['status'], 'active')
+        with self.assertRaisesRegex(ValueError, 'قبلاً'):
+            self.ingestion().ingest('different-name.txt', b'first synthetic body', '')
+
+    def test_metadata_edit_and_replacement_preserve_stable_identifier(self):
+        original = self.ingestion().ingest(
+            'original.txt', ('old synthetic content ' * 200).encode(), 'synthetic-model')
+        self.ingestion().update_metadata(original['id'], 'renamed.txt')
+        before = self.repository.document_records()
+        self.assertGreater(len(before), 1)
+        self.assertEqual(self.repository.get_document(original['id'])['name'], 'renamed.txt')
+        replacement = self.ingestion().replace(
+            original['id'], 'replacement.txt', b'new synthetic content', 'synthetic-model', True)
+        self.assertEqual(replacement['id'], original['id'])
+        records = self.repository.document_records()
+        self.assertEqual([row['document_id'] for row in records], [original['id']])
+        self.assertEqual([row['content'] for row in records], ['new synthetic content'])
+        self.assertEqual(self.repository.get_document(original['id'])['name'], 'replacement.txt')
+
+    def test_failed_replacement_keeps_original_chunks_and_vectors(self):
+        original = self.ingestion().ingest('original.txt', b'original retained', 'synthetic-model')
+        before = [dict(row) for row in self.repository.document_records()]
+        failing = self.ingestion(lambda text, model: (_ for _ in ()).throw(ValueError('embedding failure')))
+        with self.assertRaisesRegex(ValueError, 'embedding failure'):
+            failing.replace(original['id'], 'replacement.txt', b'replacement fails', 'synthetic-model', True)
+        self.assertEqual([dict(row) for row in self.repository.document_records()], before)
+        with self.assertRaisesRegex(ValueError, 'تأیید'):
+            self.ingestion().replace(original['id'], 'replacement.txt', b'new body', '', False)
+
 
 if __name__ == '__main__':
     unittest.main()

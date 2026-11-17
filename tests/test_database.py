@@ -34,6 +34,15 @@ class DatabaseLayerTests(unittest.TestCase):
         self.assertEqual(database_status(self.connect)['schema_version'], SCHEMA_VERSION)
         self.assertEqual(self.repositories.chat_history(chat_id)[0]['content'], 'Synthetic history')
 
+    def test_document_lifecycle_migration_is_additive_for_legacy_database(self):
+        with self.connect() as database:
+            database.execute('PRAGMA user_version=1')
+        initialize_database(self.connect)
+        with self.connect() as database:
+            columns = {row['name'] for row in database.execute('PRAGMA table_info(documents)').fetchall()}
+            self.assertTrue({'status', 'updated_at'} <= columns)
+            self.assertEqual(database.execute('PRAGMA user_version').fetchone()[0], SCHEMA_VERSION)
+
     def test_knowledge_crud_preserves_repository_contract(self):
         created = self.repositories.save_knowledge(
             None, 'Synthetic policy', 'Synthetic category', 'Initial content', 'Synthetic source', 'now')
