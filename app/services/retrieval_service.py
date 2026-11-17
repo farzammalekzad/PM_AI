@@ -2,6 +2,7 @@
 import json
 import re
 import time
+import unicodedata
 from dataclasses import dataclass
 
 from app.services.citation_service import document_identifier
@@ -16,18 +17,26 @@ KNOWLEDGE_STOP = {
     'برای', 'چگونه', 'درباره', 'میخواهم', 'میشود', 'چیست', 'کنید', 'لطفا', 'اینکه', 'همه',
     'اطلاعات', 'شرکت', 'دارد',
 }
+TOKEN_PATTERN = re.compile(r'[A-Za-z0-9_]+|[\u0621-\u063A\u0641-\u064A\u0671-\u06D5]+')
 
 
 def normalize_persian(text):
-    """Keep the established Arabic/Persian normalization used by lexical retrieval."""
-    normalized = str(text).lower().replace('ي', 'ی').replace('ك', 'ک').replace('‌', ' ')
+    """Normalize established Arabic/Persian variants without changing stored data."""
+    normalized = unicodedata.normalize('NFKC', str(text)).lower()
+    normalized = (normalized.replace('ي', 'ی').replace('ى', 'ی').replace('ك', 'ک')
+                   .replace('\u0640', '').replace('\u200c', ' ').replace('\u200d', ' ')
+                   .replace('\ufeff', ' ').replace('\u200e', ' ').replace('\u200f', ' '))
     normalized = re.sub(r'[\u064b-\u065f\u0670]', '', normalized)
     return re.sub(r'\s+', ' ', normalized).strip()
 
 
-def tokenize_persian(text):
-    return set(token for token in re.findall(r'[\w\u0600-\u06ff]{3,}', normalize_persian(text))
-               if token not in PERSIAN_STOP)
+def persian_tokens(text):
+    """Return ordered terms while excluding punctuation such as the Persian question mark."""
+    return TOKEN_PATTERN.findall(normalize_persian(text))
+
+
+def tokenize_persian(text, stop_words=PERSIAN_STOP):
+    return {token for token in persian_tokens(text) if len(token) >= 3 and token not in stop_words}
 
 
 def cosine_similarity(left, right):
@@ -65,8 +74,8 @@ class RetrievalService:
         self.embedding_model = embedding_model
 
     def search_knowledge(self, question, limit=5):
-        terms = [term for term in re.findall(r'[\w\u0600-\u06ff]{3,}', normalize_persian(question))
-                 if term not in KNOWLEDGE_STOP]
+        terms = [term for term in persian_tokens(question)
+                 if len(term) >= 3 and term not in KNOWLEDGE_STOP]
         terms = list(dict.fromkeys(terms))[:24]
         rows = self.repository_factory().approved_knowledge()
         scored = []

@@ -29,6 +29,13 @@ class AnswerEvaluationTests(unittest.TestCase):
         self.assertEqual(result['deterministic']['human_review']['status'], 'required')
         self.assertIsNone(result['deterministic']['human_review']['answer_supported_by_evidence'])
 
+    def test_weakly_matching_source_is_not_automatically_answer_evidence(self):
+        case = dict(ANSWER_CASES[-1], retrieved_ids=['D5-C1'])
+        checks = deterministic_checks(case, 'رمز در منبع ثبت نشده است. [D5-C1]')
+        self.assertTrue(checks['citations_refer_to_retrieved_sources'])
+        self.assertEqual(checks['human_review']['status'], 'required')
+        self.assertIsNone(checks['human_review']['unsupported_factual_claims'])
+
 
 if __name__ == '__main__':
     unittest.main()

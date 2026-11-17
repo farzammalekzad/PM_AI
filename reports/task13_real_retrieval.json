@@ -1,0 +1,477 @@
+{
+  "dataset": {
+    "documents": 14,
+    "questions": 31,
+    "synthetic": true,
+    "embedding_model": null
+  },
+  "modes": [
+    {
+      "mode": "lexical",
+      "status": "evaluated",
+      "reason": null,
+      "metrics": {
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "mrr_at_5": 0.9382716049382717,
+        "precision_at_5": 0.17419354838709683,
+        "mean_latency_ms": 0.25234193548387096,
+        "p95_latency_ms": 0.4113,
+        "evaluated_questions": 31,
+        "answerable_questions": 27,
+        "unanswerable_questions": 4,
+        "unanswerable_false_positives": 1
+      },
+      "cases": [
+        {
+          "question": "نقاط عطف برنامه زمان‌بندی پروژه کجا ثبت می‌شوند؟",
+          "category": "project_management",
+          "relevant_ids": [
+            "D1-C1"
+          ],
+          "retrieved_ids": [
+            "D1-C1",
+            "D1-C2",
+            "D2-C2",
+            "D2-C1",
+            "D4-C2"
+          ],
+          "latency_ms": 0.4777
+        },
+        {
+          "question": "برای برنامه‌ریزی فعالیت‌ها چه اطلاعاتی لازم است؟",
+          "category": "project_management",
+          "relevant_ids": [
+            "D1-C1"
+          ],
+          "retrieved_ids": [
+            "D1-C1"
+          ],
+          "latency_ms": 0.2466
+        },
+        {
+          "question": "برنامه ريزي پروژه و تاريخ پايان فعاليت‌ها چیست؟",
+          "category": "persian_arabic_variant",
+          "relevant_ids": [
+            "D1-C1"
+          ],
+          "retrieved_ids": [
+            "D1-C1",
+            "D1-C2",
+            "D6-C2"
+          ],
+          "latency_ms": 0.2481
+        },
+        {
+          "question": "تاخیر پروژه از چه زمانی باید گزارش شود؟",
+          "category": "project_delays",
+          "relevant_ids": [
+            "D1-C2"
+          ],
+          "retrieved_ids": [
+            "D1-C2",
+            "D6-C2",
+            "D5-C1",
+            "D7-C1",
+            "D7-C2"
+          ],
+          "latency_ms": 0.2458
+        },
+        {
+          "question": "اگر کار سه روز عقب افتاد چه اقدامی لازم است؟",
+          "category": "semantic_paraphrase",
+          "relevant_ids": [
+            "D1-C2"
+          ],
+          "retrieved_ids": [
+            "D1-C2",
+            "D4-C1",
+            "D6-C1"
+          ],
+          "latency_ms": 0.2428
+        },
+        {
+          "question": "چه کسی از دیرکرد فعالیت‌ها مطلع می‌شود؟",
+          "category": "project_delays",
+          "relevant_ids": [
+            "D1-C2"
+          ],
+          "retrieved_ids": [
+            "D1-C1",
+            "D1-C2",
+            "D5-C1",
+            "D6-C1",
+            "D6-C2"
+          ],
+          "latency_ms": 0.2394
+        },
+        {
+          "question": "صورتجلسه باید چه تصمیم‌هایی را ثبت کند؟",
+          "category": "meeting_minutes",
+          "relevant_ids": [
+            "D2-C1"
+          ],
+          "retrieved_ids": [
+            "D2-C1",
+            "D1-C2",
+            "D5-C1",
+            "D7-C2",
+            "D2-C2"
+          ],
+          "latency_ms": 0.2415
+        },
+        {
+          "question": "مسئول اقدام‌های جلسه در کدام سند مشخص می‌شود؟",
+          "category": "meeting_minutes",
+          "relevant_ids": [
+            "D2-C1"
+          ],
+          "retrieved_ids": [
+            "D2-C1",
+            "D7-C2",
+            "D1-C1",
+            "D1-C2",
+            "D2-C2"
+          ],
+          "latency_ms": 0.2544
+        },
+        {
+          "question": "چه کسانی در ابتدای صورتجلسه نوشته می‌شوند؟",
+          "category": "meeting_minutes",
+          "relevant_ids": [
+            "D2-C2"
+          ],
+          "retrieved_ids": [
+            "D2-C2",
+            "D2-C1"
+          ],
+          "latency_ms": 0.2379
+        },
+        {
+          "question": "تغییر دامنه قرارداد چگونه معتبر می‌شود؟",
+          "category": "contracts",
+          "relevant_ids": [
+            "D3-C1"
+          ],
+          "retrieved_ids": [
+            "D3-C1",
+            "D6-C2",
+            "D1-C2",
+            "D3-C2",
+            "D5-C1"
+          ],
+          "latency_ms": 0.239
+        },
+        {
+          "question": "اصلاح محدوده قرارداد به چه تاییدی نیاز دارد؟",
+          "category": "semantic_paraphrase",
+          "relevant_ids": [
+            "D3-C1"
+          ],
+          "retrieved_ids": [
+            "D3-C2",
+            "D5-C2",
+            "D3-C1",
+            "D4-C1"
+          ],
+          "latency_ms": 0.2395
+        },
+        {
+          "question": "برای فسخ قرارداد چه نوع اعلانی لازم است؟",
+          "category": "contracts",
+          "relevant_ids": [
+            "D3-C2"
+          ],
+          "retrieved_ids": [
+            "D3-C2",
+            "D3-C1"
+          ],
+          "latency_ms": 0.2336
+        },
+        {
+          "question": "گزارش پیشرفت هفتگی چه بخش‌هایی دارد؟",
+          "category": "progress_reporting",
+          "relevant_ids": [
+            "D4-C1"
+          ],
+          "retrieved_ids": [
+            "D4-C1",
+            "D1-C2",
+            "D5-C2",
+            "D6-C2",
+            "D7-C1"
+          ],
+          "latency_ms": 0.2402
+        },
+        {
+          "question": "موانع پروژه را کجا گزارش می‌کنیم؟",
+          "category": "progress_reporting",
+          "relevant_ids": [
+            "D4-C1"
+          ],
+          "retrieved_ids": [
+            "D1-C2",
+            "D4-C1",
+            "D6-C2",
+            "D1-C1",
+            "D7-C1"
+          ],
+          "latency_ms": 0.2373
+        },
+        {
+          "question": "ثبت ریسک شامل چه مشخصاتی است؟",
+          "category": "organizational_procedures",
+          "relevant_ids": [
+            "D4-C2"
+          ],
+          "retrieved_ids": [
+            "D4-C2",
+            "D1-C1",
+            "D1-C2",
+            "D2-C1",
+            "D5-C1"
+          ],
+          "latency_ms": 0.2335
+        },
+        {
+          "question": "درخواست مرخصی چگونه تایید می‌شود؟",
+          "category": "organizational_procedures",
+          "relevant_ids": [
+            "D5-C1"
+          ],
+          "retrieved_ids": [
+            "D5-C1",
+            "D3-C1",
+            "D6-C1",
+            "D1-C2",
+            "D5-C2"
+          ],
+          "latency_ms": 0.2363
+        },
+        {
+          "question": "تاييد مرخصي توسط چه کسی انجام می‌شود؟",
+          "category": "persian_arabic_variant",
+          "relevant_ids": [
+            "D5-C1"
+          ],
+          "retrieved_ids": [
+            "D5-C1",
+            "D6-C1",
+            "D1-C2",
+            "D3-C1",
+            "D4-C1"
+          ],
+          "latency_ms": 0.2477
+        },
+        {
+          "question": "برای خرید بزرگ چند استعلام لازم است؟",
+          "category": "organizational_procedures",
+          "relevant_ids": [
+            "D5-C2"
+          ],
+          "retrieved_ids": [
+            "D5-C2"
+          ],
+          "latency_ms": 0.2293
+        },
+        {
+          "question": "واحد تدارکات چه خریدی را تایید می‌کند؟",
+          "category": "procurement",
+          "relevant_ids": [
+            "D5-C2"
+          ],
+          "retrieved_ids": [
+            "D5-C2",
+            "D2-C1",
+            "D3-C1",
+            "D5-C1",
+            "D6-C1"
+          ],
+          "latency_ms": 0.233
+        },
+        {
+          "question": "تحویل کار پس از چه آزمونی انجام می‌شود؟",
+          "category": "project_management",
+          "relevant_ids": [
+            "D6-C1"
+          ],
+          "retrieved_ids": [
+            "D6-C1",
+            "D4-C1",
+            "D1-C2",
+            "D5-C1",
+            "D6-C2"
+          ],
+          "latency_ms": 0.2358
+        },
+        {
+          "question": "پذیرش محصول به چه معیارهایی وابسته است؟",
+          "category": "semantic_paraphrase",
+          "relevant_ids": [
+            "D6-C1"
+          ],
+          "retrieved_ids": [
+            "D6-C1"
+          ],
+          "latency_ms": 0.2232
+        },
+        {
+          "question": "تغییرات مهم پروژه به چه کسانی ارسال می‌شود؟",
+          "category": "organizational_procedures",
+          "relevant_ids": [
+            "D6-C2"
+          ],
+          "retrieved_ids": [
+            "D6-C2",
+            "D1-C2",
+            "D1-C1",
+            "D5-C1",
+            "D6-C1"
+          ],
+          "latency_ms": 0.4113
+        },
+        {
+          "question": "اطلاع‌رسانی تغییرات پروژه برای ذی‌نفعان چگونه است؟",
+          "category": "semantic_paraphrase",
+          "relevant_ids": [
+            "D6-C2"
+          ],
+          "retrieved_ids": [
+            "D6-C2",
+            "D1-C1",
+            "D1-C2",
+            "D7-C2"
+          ],
+          "latency_ms": 0.2431
+        },
+        {
+          "question": "انحراف بودجه ماهانه چگونه بررسی می‌شود؟",
+          "category": "progress_reporting",
+          "relevant_ids": [
+            "D7-C1"
+          ],
+          "retrieved_ids": [
+            "D7-C1",
+            "D1-C2",
+            "D5-C1",
+            "D6-C1",
+            "D6-C2"
+          ],
+          "latency_ms": 0.2375
+        },
+        {
+          "question": "گزارش مالی چه مقایسه‌ای با بودجه دارد؟",
+          "category": "budget",
+          "relevant_ids": [
+            "D7-C1"
+          ],
+          "retrieved_ids": [
+            "D7-C1",
+            "D4-C1",
+            "D1-C2",
+            "D5-C2",
+            "D6-C2"
+          ],
+          "latency_ms": 0.2373
+        },
+        {
+          "question": "حادثه ایمنی را چه زمانی باید ثبت کرد؟",
+          "category": "organizational_procedures",
+          "relevant_ids": [
+            "D7-C2"
+          ],
+          "retrieved_ids": [
+            "D7-C2",
+            "D1-C2",
+            "D5-C1",
+            "D2-C1",
+            "D4-C2"
+          ],
+          "latency_ms": 0.2449
+        },
+        {
+          "question": "به چه کسی باید رخداد ایمنی را اطلاع داد؟",
+          "category": "safety",
+          "relevant_ids": [
+            "D7-C2"
+          ],
+          "retrieved_ids": [
+            "D7-C2",
+            "D1-C2",
+            "D3-C1",
+            "D3-C2",
+            "D5-C1"
+          ],
+          "latency_ms": 0.2545
+        },
+        {
+          "question": "سیاست شرکت درباره غذای کارکنان چیست؟",
+          "category": "unanswerable",
+          "relevant_ids": [],
+          "retrieved_ids": [],
+          "latency_ms": 0.2225
+        },
+        {
+          "question": "رمز عبور سامانه مالی چیست؟",
+          "category": "unanswerable",
+          "relevant_ids": [],
+          "retrieved_ids": [
+            "D5-C1",
+            "D7-C1"
+          ],
+          "latency_ms": 0.2307
+        },
+        {
+          "question": "دفتر شرکت در کدام شهر است؟",
+          "category": "unanswerable",
+          "relevant_ids": [],
+          "retrieved_ids": [],
+          "latency_ms": 0.2565
+        },
+        {
+          "question": "مدل تلفن مدیرعامل چیست؟",
+          "category": "unanswerable",
+          "relevant_ids": [],
+          "retrieved_ids": [],
+          "latency_ms": 0.2217
+        }
+      ],
+      "failures": [
+        {
+          "question": "رمز عبور سامانه مالی چیست؟",
+          "category": "unanswerable",
+          "relevant_ids": [],
+          "retrieved_ids": [
+            "D5-C1",
+            "D7-C1"
+          ],
+          "latency_ms": 0.2307,
+          "reason": "unanswerable_question_returned_sources"
+        }
+      ]
+    },
+    {
+      "mode": "semantic",
+      "status": "unavailable",
+      "reason": "embedding_model_unavailable",
+      "metrics": null,
+      "cases": [],
+      "failures": []
+    },
+    {
+      "mode": "hybrid",
+      "status": "unavailable",
+      "reason": "embedding_model_unavailable",
+      "metrics": null,
+      "cases": [],
+      "failures": []
+    }
+  ],
+  "evaluation_kind": "real_local_embedding",
+  "embedding": {
+    "model": "qwen3-embedding-local:latest",
+    "available": false,
+    "dimension": null,
+    "error": "URLError"
+  }
+}

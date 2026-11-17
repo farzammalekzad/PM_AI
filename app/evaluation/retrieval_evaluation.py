@@ -8,6 +8,7 @@ from app.services.citation_service import document_identifier
 from app.services.retrieval_service import (
     RetrievalService, cosine_similarity, normalize_persian, tokenize_persian,
 )
+from app.evaluation.persian_synonym_experiment import experimental_normalize, experimental_terms
 
 
 def metric_summary(results):
@@ -123,6 +124,23 @@ def lexical_retriever(records):
     return lambda question: service.retrieve_documents(question, limit=5).records
 
 
+def experimental_synonym_retriever(records):
+    """Evaluate lexical synonym expansion without changing ``RetrievalService``."""
+    def retrieve(question):
+        words = experimental_terms(question)
+        ranked = []
+        for position, record in enumerate(records):
+            body = experimental_normalize(record['content'])
+            title = experimental_normalize(record['name'])
+            hits = (sum(2 if word in title else 0 for word in words) +
+                    sum(1 for word in words if word in body))
+            if hits:
+                ranked.append((hits / max(1, len(words)), position, record))
+        ranked.sort(key=lambda item: (-item[0], item[1]))
+        return [record for _, _, record in ranked[:5]]
+    return retrieve
+
+
 def hybrid_retriever(records, embedder, embedding_model):
     service = RetrievalService(lambda: InMemoryRepository(records), embedder, embedding_model)
     return lambda question: service.retrieve_documents(question, limit=5).records
@@ -200,6 +218,19 @@ def evaluate_dataset(records, cases, embedder=None, embedding_model=''):
     report['modes'].append(evaluate_mode(
         'hybrid', cases, hybrid_retriever(records, embedder, embedding_model)))
     return report
+
+
+def evaluate_synonym_experiment(records, cases):
+    """Compare baseline lexical retrieval with an explicit evaluation-only mode."""
+    return {
+        'dataset': {'documents': len(records), 'questions': len(cases), 'synthetic': True},
+        'experiment': 'review_required_persian_synonym_expansion',
+        'modes': [
+            evaluate_mode('lexical_baseline', cases, lexical_retriever(records)),
+            evaluate_mode('lexical_synonym_experiment', cases,
+                          experimental_synonym_retriever(records)),
+        ],
+    }
 
 
 def markdown_summary(report):

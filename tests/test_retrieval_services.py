@@ -4,7 +4,7 @@ import unittest
 
 from app.services.citation_service import evidence_items, source_metadata
 from app.services.retrieval_service import RetrievalService, cosine_similarity
-from app.services.retrieval_service import normalize_persian, tokenize_persian
+from app.services.retrieval_service import normalize_persian, persian_tokens, tokenize_persian
 
 
 class FakeRepository:
@@ -30,6 +30,19 @@ class RetrievalServiceTests(unittest.TestCase):
         ])
         service = RetrievalService(lambda: repository, None, '')
         self.assertEqual([item['id'] for item in service.search_knowledge('بودجه')], [1, 2, 3])
+
+    def test_persian_punctuation_and_variants_preserve_token_boundaries(self):
+        self.assertEqual(tokenize_persian('می‌شود؟'), {'شود'})
+        self.assertEqual(tokenize_persian('مي شود؟'), {'شود'})
+        self.assertEqual(normalize_persian('كـتاب ي ى'), 'کتاب ی ی')
+        self.assertNotIn('شود؟', persian_tokens('می‌شود؟'))
+        records = [
+            {'document_id': 1, 'chunk_no': 1, 'content': 'فعالیت باید ثبت شود.',
+             'vector': None, 'name': 'plan.txt', 'embed_model': ''},
+        ]
+        result = RetrievalService(lambda: FakeRepository(documents=records), None, '').retrieve_documents(
+            'چه فعالیتی باید ثبت شود؟')
+        self.assertEqual([item['document_id'] for item in result.records], [1])
 
     def test_semantic_hybrid_ranking_and_top_k(self):
         records = [
