@@ -4,7 +4,7 @@ import uuid
 from dataclasses import asdict, dataclass
 from datetime import datetime
 
-from app.services.citation_service import knowledge_identifier, source_metadata
+from app.services.citation_service import cited_document_sources, knowledge_identifier, source_metadata
 
 
 @dataclass
@@ -54,6 +54,8 @@ class ChatSession:
                 completed = True
         answer = ''.join(full)
         if completed and answer:
+            # Additive terminal event: only citations emitted by the model and retrieved this turn.
+            yield {'cited_doc_sources': cited_document_sources(answer, self.documents)}
             timestamp = datetime.now().isoformat(timespec='seconds')
             if self.is_new_chat:
                 self.repository.create_chat_with_exchange(

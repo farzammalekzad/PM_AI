@@ -1,4 +1,8 @@
 """Shared citation identifiers and evidence formatting for chat retrieval."""
+import re
+
+
+DOCUMENT_CITATION = re.compile(r'\[(D\d+-C\d+)\]')
 
 
 def knowledge_identifier(fact):
@@ -53,3 +57,19 @@ def source_metadata(facts, documents):
             for document in documents
         ],
     }
+
+
+def cited_document_sources(answer, documents):
+    """Return each actually cited, retrieved document source once in answer order."""
+    by_identifier = {
+        document_identifier(document): {
+            'identifier': document_identifier(document), 'name': document['name'],
+            'location': source_location(document),
+        }
+        for document in documents
+    }
+    identifiers = []
+    for identifier in DOCUMENT_CITATION.findall(answer):
+        if identifier in by_identifier and identifier not in identifiers:
+            identifiers.append(identifier)
+    return [by_identifier[identifier] for identifier in identifiers]

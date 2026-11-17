@@ -2,7 +2,7 @@
 import json
 import unittest
 
-from app.services.citation_service import evidence_items, source_location, source_metadata
+from app.services.citation_service import cited_document_sources, evidence_items, source_location, source_metadata
 from app.services.retrieval_service import RetrievalService, cosine_similarity
 from app.services.retrieval_service import normalize_persian, persian_tokens, tokenize_persian
 
@@ -114,6 +114,21 @@ class RetrievalServiceTests(unittest.TestCase):
         self.assertEqual(metadata['doc_sources'], ['D8-C3 (policy.txt)'])
         self.assertEqual(metadata['doc_source_details'][0]['location'], 'صفحه 2 تا 3')
         self.assertEqual(source_location({'document_id': 1, 'chunk_no': 1}), '')
+
+    def test_cited_document_sources_only_return_known_retrieved_documents_once(self):
+        documents = [
+            {'document_id': 4, 'chunk_no': 1, 'name': 'renamed.pdf', 'page_start': 5, 'page_end': 5},
+            {'document_id': 5, 'chunk_no': 2, 'name': 'budget.xlsx', 'worksheet': 'بودجه',
+             'row_start': 7, 'row_end': 9},
+            {'document_id': 6, 'chunk_no': 1, 'name': 'legacy.txt'},
+        ]
+        sources = cited_document_sources(
+            'پاسخ [D4-C1] و [D5-C2] و دوباره [D4-C1] و ناشناخته [D9-C9]', documents)
+        self.assertEqual([item['identifier'] for item in sources], ['D4-C1', 'D5-C2'])
+        self.assertEqual(sources[0]['name'], 'renamed.pdf')
+        self.assertEqual(sources[0]['location'], 'صفحه 5')
+        self.assertEqual(sources[1]['location'], 'کاربرگ بودجه، ردیف 7 تا 9')
+        self.assertEqual(cited_document_sources('ارجاع قدیمی [D6-C1]', documents)[0]['location'], '')
 
 
 if __name__ == '__main__':

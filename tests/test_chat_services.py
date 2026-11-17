@@ -83,7 +83,7 @@ class ChatServiceTests(unittest.TestCase):
         repository = FakeRepository()
         client = FakeClient([
             {'message': {'thinking': 'Synthetic reasoning'}, 'done': False},
-            {'message': {'content': 'Synthetic answer'}, 'done': True},
+            {'message': {'content': 'Synthetic answer [D2-C1]'}, 'done': True},
         ])
         session = self._service(repository, client).start({
             'chat_id': None, 'question': 'Synthetic question', 'content': 'Synthetic question',
@@ -94,9 +94,11 @@ class ChatServiceTests(unittest.TestCase):
         self.assertEqual(events[0]['source_ids'], [1])
         self.assertEqual(events[0]['doc_sources'], ['D2-C1 (synthetic.txt)'])
         self.assertEqual(events[1]['thinking'], 'Synthetic reasoning')
-        self.assertEqual(events[2]['content'], 'Synthetic answer')
+        self.assertEqual(events[2]['content'], 'Synthetic answer [D2-C1]')
+        self.assertEqual(events[3]['cited_doc_sources'],
+                         [{'identifier': 'D2-C1', 'name': 'synthetic.txt', 'location': ''}])
         self.assertEqual(len(repository.new_exchanges), 1)
-        self.assertEqual(repository.new_exchanges[0][3], 'Synthetic answer')
+        self.assertEqual(repository.new_exchanges[0][3], 'Synthetic answer [D2-C1]')
 
     def test_empty_or_interrupted_new_stream_does_not_create_chat(self):
         repository = FakeRepository()

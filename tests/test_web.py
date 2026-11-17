@@ -59,6 +59,8 @@ class WebExtractionTests(unittest.TestCase):
         script = self._get('/static/app.js')
         self.assertEqual(script.status, 200)
         self.assertIn('textContent', script.wfile.getvalue().decode('utf-8'))
+        self.assertIn('renderCitedSources', script.wfile.getvalue().decode('utf-8'))
+        self.assertIn('cited_doc_sources', script.wfile.getvalue().decode('utf-8'))
         self.assertIn('document-replace', script.wfile.getvalue().decode('utf-8'))
         self.assertIn('document-delete-confirmed', script.wfile.getvalue().decode('utf-8'))
         self.assertIn('replaceConfirm', body)
