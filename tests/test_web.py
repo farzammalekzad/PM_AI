@@ -1,6 +1,8 @@
 """Synthetic compatibility and security checks for local web extraction."""
 import importlib.util
 import io
+import base64
+import json
 import tempfile
 import unittest
 from email.message import Message
@@ -56,6 +58,9 @@ class WebExtractionTests(unittest.TestCase):
         script = self._get('/static/app.js')
         self.assertEqual(script.status, 200)
         self.assertIn('textContent', script.wfile.getvalue().decode('utf-8'))
+        self.assertIn('document-replace', script.wfile.getvalue().decode('utf-8'))
+        self.assertIn('document-delete-confirmed', script.wfile.getvalue().decode('utf-8'))
+        self.assertIn('replaceConfirm', body)
         self.assertIn('keydown', script.wfile.getvalue().decode('utf-8'))
         styles = self._get('/static/styles.css')
         self.assertEqual(styles.response_headers['Content-Type'], 'text/css; charset=utf-8')
@@ -75,6 +80,45 @@ class WebExtractionTests(unittest.TestCase):
         app.Handler.do_POST(capture)
         self.assertEqual(capture.status, 400)
         self.assertIn('نوع محتوای درخواست', capture.wfile.getvalue().decode('utf-8'))
+
+    def test_document_lifecycle_api_is_additive_and_requires_confirmation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            original = (app.DATA, app.DB, app.EMBED_MODEL, app._WebDependencies.embedding_model)
+            try:
+                app.DATA = Path(directory)
+                app.DB = app.DATA / 'synthetic.sqlite3'
+                app.EMBED_MODEL = ''
+                app._WebDependencies.embedding_model = ''
+                app.initialize()
+
+                def post(path, value):
+                    raw = json.dumps(value).encode('utf-8')
+                    headers = Message()
+                    headers['Content-Type'] = 'application/json'
+                    headers['Content-Length'] = str(len(raw))
+                    capture = Capture(path, headers, raw)
+                    app.Handler.do_POST(capture)
+                    return capture, json.loads(capture.wfile.getvalue())
+
+                content = base64.b64encode(b'first synthetic content').decode()
+                capture, added = post('/api/document-add', {'name': 'synthetic.txt', 'data': content})
+                self.assertEqual(capture.status, 200)
+                capture, rejected = post('/api/document-replace', {
+                    'id': added['id'], 'name': 'replacement.txt', 'data': content, 'confirmed': False})
+                self.assertEqual(capture.status, 400)
+                self.assertIn('تأیید', rejected['error'])
+                replacement = base64.b64encode(b'replacement synthetic content').decode()
+                capture, replaced = post('/api/document-replace', {
+                    'id': added['id'], 'name': 'replacement.txt', 'data': replacement, 'confirmed': True})
+                self.assertEqual(capture.status, 200)
+                self.assertEqual(replaced['id'], added['id'])
+                capture, _ = post('/api/document-delete-confirmed', {'id': added['id'], 'confirmed': False})
+                self.assertEqual(capture.status, 400)
+                capture, deleted = post('/api/document-delete-confirmed', {'id': added['id'], 'confirmed': True})
+                self.assertEqual(capture.status, 200)
+                self.assertTrue(deleted['deleted'])
+            finally:
+                app.DATA, app.DB, app.EMBED_MODEL, app._WebDependencies.embedding_model = original
 
 
 if __name__ == '__main__':
