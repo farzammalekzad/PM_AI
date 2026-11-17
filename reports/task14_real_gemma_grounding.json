@@ -1,0 +1,27 @@
+{
+  "evaluation_kind": "real_local_gemma_unavailable",
+  "synthetic": true,
+  "chat_model": "gemma4:e4b-it-qat",
+  "error": "URLError",
+  "automatic_claim": "No mocked or substitute answers were generated.",
+  "experiments": [
+    {
+      "mode": "direct",
+      "status": "unavailable",
+      "metrics": null,
+      "cases": []
+    },
+    {
+      "mode": "oracle_context",
+      "status": "unavailable",
+      "metrics": null,
+      "cases": []
+    },
+    {
+      "mode": "end_to_end_rag",
+      "status": "unavailable",
+      "metrics": null,
+      "cases": []
+    }
+  ]
+}
