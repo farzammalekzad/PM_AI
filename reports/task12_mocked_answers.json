@@ -1,0 +1,128 @@
+{
+  "evaluation_kind": "mocked_answers",
+  "synthetic": true,
+  "automatic_claim": "Citation syntax, retrieval membership, abstention markers, and required wording are checked deterministically. They do not prove factual grounding.",
+  "metrics": {
+    "cases": 4,
+    "evaluated_cases": 4,
+    "citation_validity_rate": 1.0,
+    "abstention_accuracy": 1.0,
+    "required_wording_rate": 1.0,
+    "human_reviewed_cases": 0
+  },
+  "cases": [
+    {
+      "id": "answerable_delay",
+      "status": "evaluated",
+      "question": "تاخیر پروژه از چه زمانی باید گزارش شود؟",
+      "retrieved_ids": [
+        "D1-C2"
+      ],
+      "answer": "تاخیر بیش از سه روز باید ثبت و برای مدیر پروژه گزارش شود. [D1-C2]",
+      "deterministic": {
+        "citations": [
+          "D1-C2"
+        ],
+        "citations_refer_to_retrieved_sources": true,
+        "invalid_citations": [],
+        "expected_abstention": false,
+        "abstained": false,
+        "abstention_correct": true,
+        "required_persian_phrases": [
+          "بیش از سه روز"
+        ],
+        "required_persian_wording_present": true,
+        "human_review": {
+          "answer_supported_by_evidence": null,
+          "unsupported_factual_claims": null,
+          "reviewer_notes": null,
+          "status": "required"
+        }
+      }
+    },
+    {
+      "id": "paraphrase_contract",
+      "status": "evaluated",
+      "question": "اصلاح محدوده قرارداد به چه تاییدی نیاز دارد؟",
+      "retrieved_ids": [
+        "D3-C1"
+      ],
+      "answer": "اصلاح محدوده قرارداد با درخواست کتبی و تایید طرفین معتبر است. [D3-C1]",
+      "deterministic": {
+        "citations": [
+          "D3-C1"
+        ],
+        "citations_refer_to_retrieved_sources": true,
+        "invalid_citations": [],
+        "expected_abstention": false,
+        "abstained": false,
+        "abstention_correct": true,
+        "required_persian_phrases": [
+          "درخواست کتبی",
+          "تایید طرفین"
+        ],
+        "required_persian_wording_present": true,
+        "human_review": {
+          "answer_supported_by_evidence": null,
+          "unsupported_factual_claims": null,
+          "reviewer_notes": null,
+          "status": "required"
+        }
+      }
+    },
+    {
+      "id": "partial_evidence",
+      "status": "evaluated",
+      "question": "آیا گزارش پیشرفت هفتگی علت همه موانع را مشخص می‌کند؟",
+      "retrieved_ids": [
+        "D4-C1"
+      ],
+      "answer": "منبع فقط وجود موانع در گزارش پیشرفت هفتگی را بیان می‌کند و علت همه آن‌ها را مشخص نمی‌کند. [D4-C1]",
+      "deterministic": {
+        "citations": [
+          "D4-C1"
+        ],
+        "citations_refer_to_retrieved_sources": true,
+        "invalid_citations": [],
+        "expected_abstention": false,
+        "abstained": false,
+        "abstention_correct": true,
+        "required_persian_phrases": [
+          "موانع"
+        ],
+        "required_persian_wording_present": true,
+        "human_review": {
+          "answer_supported_by_evidence": null,
+          "unsupported_factual_claims": null,
+          "reviewer_notes": null,
+          "status": "required"
+        }
+      }
+    },
+    {
+      "id": "unanswerable_password",
+      "status": "evaluated",
+      "question": "رمز عبور سامانه مالی چیست؟",
+      "retrieved_ids": [],
+      "answer": "اطلاعات کافی برای پاسخ به این سؤال در منابع بازیابی‌شده وجود ندارد.",
+      "deterministic": {
+        "citations": [],
+        "citations_refer_to_retrieved_sources": true,
+        "invalid_citations": [],
+        "expected_abstention": true,
+        "abstained": true,
+        "abstention_correct": true,
+        "required_persian_phrases": [
+          "اطلاعات کافی"
+        ],
+        "required_persian_wording_present": true,
+        "human_review": {
+          "answer_supported_by_evidence": null,
+          "unsupported_factual_claims": null,
+          "reviewer_notes": null,
+          "status": "required"
+        }
+      }
+    }
+  ]
+}

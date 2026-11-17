@@ -4,6 +4,7 @@ import unittest
 from app.evaluation.persian_retrieval_dataset import SYNTHETIC_CASES, SYNTHETIC_DOCUMENTS, synthetic_embedder
 from app.evaluation.retrieval_evaluation import (
     evaluate_dataset, failure_analysis, markdown_summary, materialize_embeddings, metric_summary,
+    retrieval_diagnostics,
 )
 
 
@@ -66,6 +67,16 @@ class RetrievalEvaluationTests(unittest.TestCase):
         self.assertEqual(records[0]['vector'], '[1.0, 2.0]')
         with self.assertRaises(ValueError):
             materialize_embeddings(SYNTHETIC_DOCUMENTS[:1], lambda text, model: [float('nan')], 'model')
+
+    def test_failure_diagnostics_explain_expected_delay_chunk_exclusion(self):
+        trace = retrieval_diagnostics(
+            SYNTHETIC_DOCUMENTS, 'چه کسی از دیرکرد فعالیت‌ها مطلع می‌شود؟')
+        expected = next(item for item in trace['candidates'] if item['identifier'] == 'D1-C2')
+        lexical_match = next(item for item in trace['candidates'] if item['identifier'] == 'D1-C1')
+        self.assertEqual(trace['top_five'], ['D1-C1'])
+        self.assertEqual(expected['lexical_score'], 0.0)
+        self.assertEqual(expected['exclusion_reason'], 'no_lexical_hit_without_semantic_vector')
+        self.assertEqual(lexical_match['body_hits'], ['فعالیت'])
 
 
 if __name__ == '__main__':

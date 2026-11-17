@@ -1,0 +1,40 @@
+{
+  "evaluation_kind": "real_local_gemma_unavailable",
+  "synthetic": true,
+  "automatic_claim": "Citation syntax, retrieval membership, abstention markers, and required wording are checked deterministically. They do not prove factual grounding.",
+  "metrics": {
+    "cases": 4,
+    "evaluated_cases": 0,
+    "citation_validity_rate": 0.0,
+    "abstention_accuracy": 0.0,
+    "required_wording_rate": 0.0,
+    "human_reviewed_cases": 0
+  },
+  "cases": [
+    {
+      "id": "answerable_delay",
+      "status": "not_run",
+      "answer": null
+    },
+    {
+      "id": "paraphrase_contract",
+      "status": "not_run",
+      "answer": null
+    },
+    {
+      "id": "partial_evidence",
+      "status": "not_run",
+      "answer": null
+    },
+    {
+      "id": "unanswerable_password",
+      "status": "not_run",
+      "answer": null
+    }
+  ],
+  "chat": {
+    "model": "gemma4:e4b-it-qat",
+    "available": false,
+    "error": "URLError"
+  }
+}

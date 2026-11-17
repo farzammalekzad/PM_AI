@@ -5,7 +5,9 @@ import statistics
 import time
 
 from app.services.citation_service import document_identifier
-from app.services.retrieval_service import RetrievalService, cosine_similarity
+from app.services.retrieval_service import (
+    RetrievalService, cosine_similarity, normalize_persian, tokenize_persian,
+)
 
 
 def metric_summary(results):
@@ -51,6 +53,59 @@ def failure_analysis(case, retrieved):
     if not missing:
         return None
     return 'relevant_chunk_ranked_below_top_5' if relevant & set(retrieved) else 'relevant_chunk_not_retrieved'
+
+
+def retrieval_diagnostics(records, question, embedder=None, embedding_model=''):
+    """Expose production-compatible candidate scores for one synthetic query.
+
+    This is an evaluator-only trace.  It deliberately mirrors, rather than alters,
+    ``RetrievalService.retrieve_documents`` so reports can explain exclusions.
+    """
+    words = tokenize_persian(question)
+    query_vector = embedder(question, embedding_model) if embedder and embedding_model else None
+    candidates = []
+    for position, record in enumerate(records):
+        body = normalize_persian(record['content'])
+        title = normalize_persian(record['name'])
+        title_hits = sorted(word for word in words if word in title)
+        body_hits = sorted(word for word in words if word in body)
+        hits = 2 * len(title_hits) + len(body_hits)
+        lexical = hits / max(1, len(words))
+        semantic = None
+        if (query_vector is not None and record['embed_model'] == embedding_model
+                and record['vector']):
+            vector = json.loads(record['vector'])
+            if len(vector) == len(query_vector):
+                semantic = cosine_similarity(query_vector, vector)
+        if semantic is None:
+            included = bool(hits)
+            hybrid = lexical if included else None
+            exclusion = None if included else 'no_lexical_hit_without_semantic_vector'
+        else:
+            included = semantic >= 0.38 or bool(hits)
+            hybrid = 1.8 * semantic + 0.5 * min(lexical, 3) if included else None
+            exclusion = None if included else 'semantic_below_0.38_and_no_lexical_hit'
+        candidates.append({
+            'identifier': document_identifier(record), 'position': position,
+            'lexical_score': round(lexical, 7),
+            'cosine_similarity': None if semantic is None else round(semantic, 7),
+            'hybrid_score': None if hybrid is None else round(hybrid, 7),
+            'title_hits': title_hits, 'body_hits': body_hits,
+            'included': included, 'exclusion_reason': exclusion,
+        })
+    ranked = sorted((item for item in candidates if item['included']),
+                    key=lambda item: (-(item['hybrid_score'] or 0), item['position']))
+    ranks = {item['identifier']: index for index, item in enumerate(ranked, 1)}
+    for item in candidates:
+        item['rank'] = ranks.get(item['identifier'])
+        if item['included'] and item['rank'] > 5:
+            item['exclusion_reason'] = 'ranked_below_top_5'
+    return {
+        'query_terms': sorted(words),
+        'threshold': {'semantic_minimum_without_lexical_hit': 0.38},
+        'top_five': [item['identifier'] for item in ranked[:5]],
+        'candidates': candidates,
+    }
 
 
 class InMemoryRepository:

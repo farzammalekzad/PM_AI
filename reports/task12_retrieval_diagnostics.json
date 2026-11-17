@@ -1,0 +1,1128 @@
+{
+  "evaluation_kind": "mocked_embedding_diagnostics",
+  "synthetic": true,
+  "note": "Scores are reproducible diagnostics. Mocked embeddings are not real-model results.",
+  "investigations": [
+    {
+      "question": "چه کسی از دیرکرد فعالیت‌ها مطلع می‌شود؟",
+      "expected_ids": [
+        "D1-C2"
+      ],
+      "lexical": {
+        "query_terms": [
+          "دیرکرد",
+          "شود؟",
+          "فعالیت",
+          "مطلع",
+          "کسی"
+        ],
+        "threshold": {
+          "semantic_minimum_without_lexical_hit": 0.38
+        },
+        "top_five": [
+          "D1-C1"
+        ],
+        "candidates": [
+          {
+            "identifier": "D1-C1",
+            "position": 0,
+            "lexical_score": 0.2,
+            "cosine_similarity": null,
+            "hybrid_score": 0.2,
+            "title_hits": [],
+            "body_hits": [
+              "فعالیت"
+            ],
+            "included": true,
+            "exclusion_reason": null,
+            "rank": 1
+          },
+          {
+            "identifier": "D1-C2",
+            "position": 1,
+            "lexical_score": 0.0,
+            "cosine_similarity": null,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "no_lexical_hit_without_semantic_vector",
+            "rank": null
+          },
+          {
+            "identifier": "D2-C1",
+            "position": 2,
+            "lexical_score": 0.0,
+            "cosine_similarity": null,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "no_lexical_hit_without_semantic_vector",
+            "rank": null
+          },
+          {
+            "identifier": "D2-C2",
+            "position": 3,
+            "lexical_score": 0.0,
+            "cosine_similarity": null,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "no_lexical_hit_without_semantic_vector",
+            "rank": null
+          },
+          {
+            "identifier": "D3-C1",
+            "position": 4,
+            "lexical_score": 0.0,
+            "cosine_similarity": null,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "no_lexical_hit_without_semantic_vector",
+            "rank": null
+          },
+          {
+            "identifier": "D3-C2",
+            "position": 5,
+            "lexical_score": 0.0,
+            "cosine_similarity": null,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "no_lexical_hit_without_semantic_vector",
+            "rank": null
+          },
+          {
+            "identifier": "D4-C1",
+            "position": 6,
+            "lexical_score": 0.0,
+            "cosine_similarity": null,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "no_lexical_hit_without_semantic_vector",
+            "rank": null
+          },
+          {
+            "identifier": "D4-C2",
+            "position": 7,
+            "lexical_score": 0.0,
+            "cosine_similarity": null,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "no_lexical_hit_without_semantic_vector",
+            "rank": null
+          },
+          {
+            "identifier": "D5-C1",
+            "position": 8,
+            "lexical_score": 0.0,
+            "cosine_similarity": null,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "no_lexical_hit_without_semantic_vector",
+            "rank": null
+          },
+          {
+            "identifier": "D5-C2",
+            "position": 9,
+            "lexical_score": 0.0,
+            "cosine_similarity": null,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "no_lexical_hit_without_semantic_vector",
+            "rank": null
+          },
+          {
+            "identifier": "D6-C1",
+            "position": 10,
+            "lexical_score": 0.0,
+            "cosine_similarity": null,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "no_lexical_hit_without_semantic_vector",
+            "rank": null
+          },
+          {
+            "identifier": "D6-C2",
+            "position": 11,
+            "lexical_score": 0.0,
+            "cosine_similarity": null,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "no_lexical_hit_without_semantic_vector",
+            "rank": null
+          },
+          {
+            "identifier": "D7-C1",
+            "position": 12,
+            "lexical_score": 0.0,
+            "cosine_similarity": null,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "no_lexical_hit_without_semantic_vector",
+            "rank": null
+          },
+          {
+            "identifier": "D7-C2",
+            "position": 13,
+            "lexical_score": 0.0,
+            "cosine_similarity": null,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "no_lexical_hit_without_semantic_vector",
+            "rank": null
+          }
+        ]
+      },
+      "semantic": {
+        "top_five": [
+          "D1-C2"
+        ],
+        "candidates": [
+          {
+            "identifier": "D1-C1",
+            "position": 0,
+            "lexical_score": 0.2,
+            "cosine_similarity": 0.0,
+            "hybrid_score": 0.1,
+            "title_hits": [],
+            "body_hits": [
+              "فعالیت"
+            ],
+            "included": true,
+            "exclusion_reason": null,
+            "rank": 2
+          },
+          {
+            "identifier": "D1-C2",
+            "position": 1,
+            "lexical_score": 0.0,
+            "cosine_similarity": 1.0,
+            "hybrid_score": 1.8,
+            "title_hits": [],
+            "body_hits": [],
+            "included": true,
+            "exclusion_reason": null,
+            "rank": 1
+          },
+          {
+            "identifier": "D2-C1",
+            "position": 2,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D2-C2",
+            "position": 3,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D3-C1",
+            "position": 4,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D3-C2",
+            "position": 5,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D4-C1",
+            "position": 6,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D4-C2",
+            "position": 7,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D5-C1",
+            "position": 8,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D5-C2",
+            "position": 9,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D6-C1",
+            "position": 10,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D6-C2",
+            "position": 11,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D7-C1",
+            "position": 12,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D7-C2",
+            "position": 13,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          }
+        ],
+        "threshold_decision": "include cosine >= 0.38; lexical hits do not affect semantic-only ranking"
+      },
+      "hybrid": {
+        "query_terms": [
+          "دیرکرد",
+          "شود؟",
+          "فعالیت",
+          "مطلع",
+          "کسی"
+        ],
+        "threshold": {
+          "semantic_minimum_without_lexical_hit": 0.38
+        },
+        "top_five": [
+          "D1-C2",
+          "D1-C1"
+        ],
+        "candidates": [
+          {
+            "identifier": "D1-C1",
+            "position": 0,
+            "lexical_score": 0.2,
+            "cosine_similarity": 0.0,
+            "hybrid_score": 0.1,
+            "title_hits": [],
+            "body_hits": [
+              "فعالیت"
+            ],
+            "included": true,
+            "exclusion_reason": null,
+            "rank": 2
+          },
+          {
+            "identifier": "D1-C2",
+            "position": 1,
+            "lexical_score": 0.0,
+            "cosine_similarity": 1.0,
+            "hybrid_score": 1.8,
+            "title_hits": [],
+            "body_hits": [],
+            "included": true,
+            "exclusion_reason": null,
+            "rank": 1
+          },
+          {
+            "identifier": "D2-C1",
+            "position": 2,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D2-C2",
+            "position": 3,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D3-C1",
+            "position": 4,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D3-C2",
+            "position": 5,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D4-C1",
+            "position": 6,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D4-C2",
+            "position": 7,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D5-C1",
+            "position": 8,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D5-C2",
+            "position": 9,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D6-C1",
+            "position": 10,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D6-C2",
+            "position": 11,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D7-C1",
+            "position": 12,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D7-C2",
+            "position": 13,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          }
+        ]
+      }
+    },
+    {
+      "question": "رمز عبور سامانه مالی چیست؟",
+      "expected_ids": [],
+      "lexical": {
+        "query_terms": [
+          "رمز",
+          "سامانه",
+          "عبور",
+          "مالی",
+          "چیست؟"
+        ],
+        "threshold": {
+          "semantic_minimum_without_lexical_hit": 0.38
+        },
+        "top_five": [
+          "D5-C1",
+          "D7-C1"
+        ],
+        "candidates": [
+          {
+            "identifier": "D1-C1",
+            "position": 0,
+            "lexical_score": 0.0,
+            "cosine_similarity": null,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "no_lexical_hit_without_semantic_vector",
+            "rank": null
+          },
+          {
+            "identifier": "D1-C2",
+            "position": 1,
+            "lexical_score": 0.0,
+            "cosine_similarity": null,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "no_lexical_hit_without_semantic_vector",
+            "rank": null
+          },
+          {
+            "identifier": "D2-C1",
+            "position": 2,
+            "lexical_score": 0.0,
+            "cosine_similarity": null,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "no_lexical_hit_without_semantic_vector",
+            "rank": null
+          },
+          {
+            "identifier": "D2-C2",
+            "position": 3,
+            "lexical_score": 0.0,
+            "cosine_similarity": null,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "no_lexical_hit_without_semantic_vector",
+            "rank": null
+          },
+          {
+            "identifier": "D3-C1",
+            "position": 4,
+            "lexical_score": 0.0,
+            "cosine_similarity": null,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "no_lexical_hit_without_semantic_vector",
+            "rank": null
+          },
+          {
+            "identifier": "D3-C2",
+            "position": 5,
+            "lexical_score": 0.0,
+            "cosine_similarity": null,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "no_lexical_hit_without_semantic_vector",
+            "rank": null
+          },
+          {
+            "identifier": "D4-C1",
+            "position": 6,
+            "lexical_score": 0.0,
+            "cosine_similarity": null,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "no_lexical_hit_without_semantic_vector",
+            "rank": null
+          },
+          {
+            "identifier": "D4-C2",
+            "position": 7,
+            "lexical_score": 0.0,
+            "cosine_similarity": null,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "no_lexical_hit_without_semantic_vector",
+            "rank": null
+          },
+          {
+            "identifier": "D5-C1",
+            "position": 8,
+            "lexical_score": 0.2,
+            "cosine_similarity": null,
+            "hybrid_score": 0.2,
+            "title_hits": [],
+            "body_hits": [
+              "سامانه"
+            ],
+            "included": true,
+            "exclusion_reason": null,
+            "rank": 1
+          },
+          {
+            "identifier": "D5-C2",
+            "position": 9,
+            "lexical_score": 0.0,
+            "cosine_similarity": null,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "no_lexical_hit_without_semantic_vector",
+            "rank": null
+          },
+          {
+            "identifier": "D6-C1",
+            "position": 10,
+            "lexical_score": 0.0,
+            "cosine_similarity": null,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "no_lexical_hit_without_semantic_vector",
+            "rank": null
+          },
+          {
+            "identifier": "D6-C2",
+            "position": 11,
+            "lexical_score": 0.0,
+            "cosine_similarity": null,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "no_lexical_hit_without_semantic_vector",
+            "rank": null
+          },
+          {
+            "identifier": "D7-C1",
+            "position": 12,
+            "lexical_score": 0.2,
+            "cosine_similarity": null,
+            "hybrid_score": 0.2,
+            "title_hits": [],
+            "body_hits": [
+              "مالی"
+            ],
+            "included": true,
+            "exclusion_reason": null,
+            "rank": 2
+          },
+          {
+            "identifier": "D7-C2",
+            "position": 13,
+            "lexical_score": 0.0,
+            "cosine_similarity": null,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "no_lexical_hit_without_semantic_vector",
+            "rank": null
+          }
+        ]
+      },
+      "semantic": {
+        "top_five": [],
+        "candidates": [
+          {
+            "identifier": "D1-C1",
+            "position": 0,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D1-C2",
+            "position": 1,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D2-C1",
+            "position": 2,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D2-C2",
+            "position": 3,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D3-C1",
+            "position": 4,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D3-C2",
+            "position": 5,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D4-C1",
+            "position": 6,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D4-C2",
+            "position": 7,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D5-C1",
+            "position": 8,
+            "lexical_score": 0.2,
+            "cosine_similarity": 0.0,
+            "hybrid_score": 0.1,
+            "title_hits": [],
+            "body_hits": [
+              "سامانه"
+            ],
+            "included": true,
+            "exclusion_reason": null,
+            "rank": 1
+          },
+          {
+            "identifier": "D5-C2",
+            "position": 9,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D6-C1",
+            "position": 10,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D6-C2",
+            "position": 11,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D7-C1",
+            "position": 12,
+            "lexical_score": 0.2,
+            "cosine_similarity": 0.0,
+            "hybrid_score": 0.1,
+            "title_hits": [],
+            "body_hits": [
+              "مالی"
+            ],
+            "included": true,
+            "exclusion_reason": null,
+            "rank": 2
+          },
+          {
+            "identifier": "D7-C2",
+            "position": 13,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          }
+        ],
+        "threshold_decision": "include cosine >= 0.38; lexical hits do not affect semantic-only ranking"
+      },
+      "hybrid": {
+        "query_terms": [
+          "رمز",
+          "سامانه",
+          "عبور",
+          "مالی",
+          "چیست؟"
+        ],
+        "threshold": {
+          "semantic_minimum_without_lexical_hit": 0.38
+        },
+        "top_five": [
+          "D5-C1",
+          "D7-C1"
+        ],
+        "candidates": [
+          {
+            "identifier": "D1-C1",
+            "position": 0,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D1-C2",
+            "position": 1,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D2-C1",
+            "position": 2,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D2-C2",
+            "position": 3,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D3-C1",
+            "position": 4,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D3-C2",
+            "position": 5,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D4-C1",
+            "position": 6,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D4-C2",
+            "position": 7,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D5-C1",
+            "position": 8,
+            "lexical_score": 0.2,
+            "cosine_similarity": 0.0,
+            "hybrid_score": 0.1,
+            "title_hits": [],
+            "body_hits": [
+              "سامانه"
+            ],
+            "included": true,
+            "exclusion_reason": null,
+            "rank": 1
+          },
+          {
+            "identifier": "D5-C2",
+            "position": 9,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D6-C1",
+            "position": 10,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D6-C2",
+            "position": 11,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          },
+          {
+            "identifier": "D7-C1",
+            "position": 12,
+            "lexical_score": 0.2,
+            "cosine_similarity": 0.0,
+            "hybrid_score": 0.1,
+            "title_hits": [],
+            "body_hits": [
+              "مالی"
+            ],
+            "included": true,
+            "exclusion_reason": null,
+            "rank": 2
+          },
+          {
+            "identifier": "D7-C2",
+            "position": 13,
+            "lexical_score": 0.0,
+            "cosine_similarity": 0.0,
+            "hybrid_score": null,
+            "title_hits": [],
+            "body_hits": [],
+            "included": false,
+            "exclusion_reason": "semantic_below_0.38_and_no_lexical_hit",
+            "rank": null
+          }
+        ]
+      }
+    }
+  ]
+}
